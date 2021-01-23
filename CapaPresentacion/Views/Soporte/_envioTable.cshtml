@@ -1,0 +1,179 @@
+﻿
+<style type="text/css">
+    .dt-buttons {
+        display: none;
+    }
+
+    #example_filter {
+        display: none;
+    }
+
+    /*#TableDeta_filter {
+        display: none;
+    }*/
+</style>
+
+
+<table id="example" class="table table-hover dataTable  table-striped table-responsive">
+    <thead>
+        <tr style="background-color:#3d566e; color:#ecf0f1">
+            <th> 
+               <div id="all"><input type="checkbox" name="rGroupPrinc" value="0" class="seleccionado" id="check_all" /></div>      
+            </th>
+            <th>Identificador</th>
+            <th>Tienda</th>
+            <th>Fecha de venta</th>
+            <th>Novel estado</th>
+            <th>Fecha envío</th>
+            <th>Detalle</th>
+        </tr>
+    </thead>
+    <tbody data-bind="foreach:"></tbody>
+    <tfoot>
+        <tr>
+            <th>Enviar paquete</th>
+            <th>Identificador</th>
+            <th>Tienda</th>
+            <th>Fecha de venta</th>
+            <th>Novel estado</th>
+            <th>Fecha envío</th>
+            <th>Detalle</th>
+        </tr>
+    </tfoot>
+</table>
+
+<div class="modal fade" id="myModal1" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+    <div class="modal-dialog" role="document">
+        <div id="myModalContent1" class="modal-content" style="height:605px">
+            <div style="background-color:#c0392b; color:white;" class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                <h5 class="modal-title" id="myModalLabel" style="font: icon; font-weight: 600;"></h5>
+            </div>
+            <div id="modalBody1" class="modal-body">
+
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+
+    $(document).ready(function () {
+        $('.table').dataTable({
+            "language": {
+                "url": "../Scripts/DataTables/Spanish.json"
+            },
+            "bProcessing": false, // se agrego para probar
+            "bServerSide": true,
+            "bAutoWidth": false,
+            "sAjaxSource": '@Url.Action("getGuiaAjax", "Soporte")',
+            "fnServerParams": function (aoData) {
+                aoData.push({ "name": "dwtda", "value": $.trim($('#dwtda').val()) });
+                aoData.push({ "name": "fec_ini", "value": $.trim($('#fec_ini').val()) });
+                aoData.push({ "name": "fec_fin", "value": $.trim($('#fec_fin').val()) });
+            },
+            "bdestroy": true,
+            "start": 0,
+            //"order": [0, "asc"],
+            //"order": false,
+            "bSort": false,
+            //"aaSorting" : [[]],
+            "bDeferRender": true,
+            "aoColumns": [
+                    {
+                        "render": function (data, type, full) {
+                            return ' <div id="checkboxes"> <input type="checkbox" class="minicheck" name="rGroup" value="0" id="' + full.tran_id + '" /> </div>'
+                        }
+                    },
+                    { "sName": "tran_id", "mData": "tran_id" },
+                    { "sName": "tienda_origen", "mData": "tienda_origen" },
+                    { "sName": "fecha_des", "mData": "fecha_des" },
+                    { //Label de Enviado o No enviado ->flg_novell
+                        "render": function (data, type, full) {
+                            if (full.flg_novell == 1) {
+                                return '<div style="display: block;background-color: #41b341;" class="badge badge-pill badge-success disabled"><a class="badge badge-success disabled" style=" background-color: #41b341;"  >Enviado</a></div>';
+                            } else {
+                                return '<div style="display: block;background-color: #3d566e;" class="badge badge-pill badge-default disabled"><a class="badge badge-default disabled" style=" background-color: #3d566e;"  >No enviado</a></div>';
+                            }
+                        }
+                    },
+                    { "sName": "fec_env", "mData": "fec_env" },
+                    {      //Botón de detalle - PopUp
+                        "render": function (data, type, full) {
+                            var envio = "'" + full.cod_entid + "','" + full.fecha_des + "','" + full.tienda_origen + "'"
+                            return '<div> <a title="Ver Detalle"  onclick="PopupDetalle(' + envio + ')"  data-toggle="modal" data-target="#myModal1"  target="_blank" class="btn btn-primary btn-sm"> <span class="glyphicon glyphicon-th-list"></span></a></div>';
+                        }
+                    }
+            ],
+            dom: 'Bfrtip',
+            buttons: [
+            ]
+        });
+
+    });
+</script>
+
+<script>
+    $('.seleccionado').click(function (e) {
+        var table = $(e.target).closest('table');
+        $('td input:checkbox', table).prop('checked', this.checked);
+        console.log("dafdsa"); 
+    }); 
+</script>
+
+<script>
+    function PopupDetalle(codTienda, fecha_des, tienda_origen) {
+
+        var ControllerUrl = "@Url.Action("_popUpDetalle", "Soporte")";
+        $.ajax({
+            type: "GET",
+            url: ControllerUrl,
+            contentType: "application/json; charset=utf-8",
+            data: { codTienda: codTienda, fecha_des: fecha_des },
+            datatype: "json",
+            cache: true,
+            success: function (data) {
+
+                var options = { "backdrop": "static", keyboard: true };
+                var descfecha = ' - ' + fecha_des + ''
+                var descTienda = 'Detalle Tienda: ' + tienda_origen.substring(2, tienda_origen.length) + '' + descfecha
+
+                $('#myModalLabel').html(descTienda);
+                $('#modalBody1').html(data);
+                $('#myModal1').modal(options);
+
+               
+                $('#TableDeta').dataTable({
+                    "language": {
+                        "url": "../Scripts/DataTables/Spanish.json"
+                    },
+                    "bProcessing": true,
+                    "bServerSide": true,
+                    "bAutoWidth": false,
+                    "sAjaxSource": '@Url.Action("getDetalleAjax", "Soporte")',
+                    "fnServerParams": function (aoData) {
+                    },
+                    "bdestroy": true,
+                    "start": 0,
+                    "oSearch": { "sSearch": "" },
+                    "order": [0, "asc"],
+                    "bDeferRender": true,
+                    "aoColumns": [
+                            { "sName": "TIPO_DOC", "mData": "TIPO_DOC" },
+                            { "sName": "SERIE", "mData": "SERIE" },
+                            { "sName": "NUM_FAC", "mData": "NUM_FAC" },
+                            { "sName": "TOTAL", "mData": "TOTAL" },
+                            { "sName": "ESTADO", "mData": "ESTADO" }
+                    ],
+                    dom: 'Bfrtip',
+                    buttons: [
+                    ]
+                });
+            },
+            error: function (xhr) {
+                toastr.error(xhr, 'Mensaje');
+            }
+        });
+
+    }
+</script>

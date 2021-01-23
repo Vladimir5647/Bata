@@ -1,0 +1,403 @@
+﻿@using CapaEntidad.BataClub
+@model IEnumerable<Ent_BataClub_CuponesCO>
+@{
+    AjaxOptions options = new AjaxOptions
+    {
+        HttpMethod = "GET",
+        InsertionMode = InsertionMode.Replace,
+        UpdateTargetId = "lista",
+        OnComplete = "waitingDialog.hide();",
+        OnBegin = "waitingDialog.show('Este proceso puede tardar unos minutos' , {headerText:'Espere un momento por favor.'});",
+        OnFailure = "waitingDialog.hide();"
+    };
+}
+<link href="~/ContentSelect/bootstrap-select.css" rel="stylesheet" />
+<link href="@Url.Content("~/Content/bootstrap-select.min.css")" rel="stylesheet" type="text/css" />  
+<style>
+    .boton-td {
+        padding-top: 3px !important;
+        padding-bottom: 3px !important;
+    }
+    .content-center-text{
+        text-align: center;
+    }
+    p.content {
+        min-height: 0!important;
+        padding: 0!important;
+        margin-right: auto!important;
+        margin-left: auto!important;
+        padding-left: 0!important;
+        padding-right: 0!important;
+        color: dodgerblue;
+    }
+</style>
+<p class="text-danger">@ViewBag.SubTitle</p>
+<div class="box box-body box-primary">
+    <div class="row">
+        <div class="col-sm-10"  style="padding-left: 25px;">
+            <a href="@Url.Action("Promociones" , "BataClub")" class="btn btn-default" title="Salir"><i class="fa fa-long-arrow-left"></i>&nbsp;&nbsp;Salir</a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        </div>
+    </div>
+    <br />
+    <div class="row">
+        <div class="col-md-4" style="padding-left: 25px;">            
+            <div id="prm" class="form-group" disabled>
+                <label for="segape" style="color: #3d566e;">Promoción</label>
+                <div class="form-group">
+                    @if (ViewBag.Operacion == null)
+                    {
+                        <input type="text" value="@ViewBag.Descripcion" class="form-control" name="promocion" id="promocion" readonly="readonly" />
+                    }
+                    else
+                    {
+                        <input type="text" value="" class="form-control" name="promocion" id="promocion" />
+                    }
+                </div>
+            </div>
+        </div>
+        @if (ViewBag.Operacion != null)
+        {
+            <div class="col-md-3">
+                <div class="form-group">
+                    <label for="cadena">Cadena:</label>
+                    @Html.DropDownList("cadena", new MultiSelectList(ViewBag.listCadena, "cbo_codigo", "cbo_descripcion", null), new { @class = "form-control selectpicker", @id = "cadena", @data_live_search = "true", @multiple = "multiple", @data_actions_box = "true", @data_selected_text_format = "count > 2", @onchange = "ListarTienda()" })
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="form-group">
+                    <label for="tienda">Tienda:</label>
+                    @Html.DropDownList("tienda", new MultiSelectList(ViewBag.listTdaCadena, "cbo_codigo", "cbo_descripcion", null), new { @class = "form-control selectpicker", @id = "tienda", @data_live_search = "true", @multiple = "multiple", @data_actions_box = "true", @data_selected_text_format = "count > 2" })
+                </div>
+            </div>
+        }
+    </div>
+    <div class="row">
+        <div class="col-sm-2" style="padding-left: 25px; margin-right: inherit;">
+            <label for="segape" style="color: #3d566e;">Descuento (%)</label>
+            <div class="form-group">
+                <div class="input-group">
+                    <span class="input-group-addon"><i class="glyphicon glyphicon-tag"></i></span>
+                    @if (ViewBag.Operacion == null)
+                    {
+                        <input id="dscto" type="text" value="@ViewBag.dscto" class="form-control" name="dscto" placeholder="Descuento" readonly="readonly">
+                    }
+                    else
+                    {
+                        <input id="dscto" type="text" value="" class="form-control" name="dscto" placeholder="Descuento">
+                    }                    
+                </div>
+            </div>
+        </div>
+        <div class="col-sm-2" style="padding-left: 25px;">
+            <div class="form-group">
+                <label for="fecini" style="color: #3d566e;">Fecha Inicio</label>
+                <div class="input-group">
+                    <input type="text" name="fechaI" id="fechaI" class="form-control" value="@ViewBag.fechaI" placeholder="dd-mm-aaaa" style="height: 33.979166px;">
+                    <span class="input-group-btn">
+                        <button class="btn btn-default" id="btdpI" type="button"><i class="glyphicon glyphicon-calendar"></i></button>
+                    </span>
+                </div><!-- /input-group -->
+            </div>
+        </div>
+        <div class="col-sm-2" style="padding-left: 25px;">
+            <div class="form-group">
+                <label for="fecnac" style="color: #3d566e;">Fecha Final</label>
+                <div class="input-group">
+                    <input type="text" name="fechaF" id="fechaF" class="form-control" value="@ViewBag.fechaF" placeholder="dd-mm-aaaa" style="height: 33.979166px;">
+                    <span class="input-group-btn">
+                        <button class="btn btn-default" id="btdp" type="button"><i class="glyphicon glyphicon-calendar"></i></button>
+                    </span>
+                </div><!-- /input-group -->
+            </div>
+        </div>
+        <div class="col-sm-1" style="padding-left: 25px; margin-right: inherit; width: 130px;">
+            <label for="segape" style="color: #3d566e;">Pares Máx.</label>
+            <div class="form-group">
+                <div class="input-group">
+                    <span class="input-group-addon"><i class="glyphicon glyphicon-tag"></i></span>
+                    @if (ViewBag.Operacion == null)
+                    {
+                        <input id="pares" type="text" value="@ViewBag.pares" class="form-control" name="pares" placeholder="Pares Máx" readonly="readonly">
+                    }
+                    else
+                    {
+                        <input id="pares" type="text" class="form-control" name="pares" placeholder="Pares Máx" >
+                    }                      
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="form-group">
+                <label for="tienda">Promocion Orce:</label>
+                @Html.DropDownList("promOrce", new SelectList(ViewBag.listOP, "ORCE_COD_PROM", "ORCE_DES_PROM", null), new { @class = "form-control selectpicker", @id = "promOrce", @data_live_search = "true", @data_actions_box = "true" })
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="box box-body box-danger">
+    <h4 style="padding-left: 10px; margin-bottom:20px" class="text-bold">Clientes para cupones</h4>
+    @using (Ajax.BeginForm("_TableCupon", options))
+    {
+        <div class="row">
+            @if (ViewBag.Operacion == null)
+            {
+                <div class="col-sm-6" style="padding-left: 25px; margin-right: inherit;">
+                    <label for="segape" style="color: #3d566e;">Identificación</label>
+                    <div class="form-group">
+                        <div class="input-group">
+                            <span class="input-group-addon"><i class="glyphicon glyphicon-envelope"></i></span>
+                            <input id="identificacion" type="text" class="form-control" name="identificacion" placeholder="Ingrese DNI o Email completo">
+                        </div>
+                    </div>
+                </div>
+            }
+            else
+            {
+                <div class="col-sm-3" style="padding-left: 25px;">
+                    <div class="form-group">
+                        <label for="">Mes de cumpleaños:</label>
+                        @Html.DropDownList("mesCumple", new SelectList(ViewBag.Meses, "cbo_codigo", "cbo_descripcion", null), new { @class = "form-control selectpicker", @id = "mesCumple", @data_live_search = "true", @data_actions_box = "true" })
+                    </div>
+                </div>
+                    <div class="col-sm-3">
+                        <div class="form-group">
+                            <label for="">Genero:</label>
+                            <div>
+                                <label class="radio-inline">
+                                    <input type="radio" name="genero" id="generoF" value="F"> F
+                                </label>
+                                <label class="radio-inline">
+                                    <input type="radio" name="genero" id="generoM" value="M"> M
+                                </label>
+                                <label class="radio-inline">
+                                    <input type="radio" name="genero" id="generoT" checked value=""> Todos
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+            }
+            <div class="col-sm-6" style="padding-top: 23px; padding-right:25px">                
+                @if (ViewBag.Operacion == null)
+                {
+                    <button id="btnAgregarBuscar" type="submit" value="@(ViewBag.Operacion == null ? 2 : 1)" name="operacion" title="Agregar" class="btn btn-success" @*href="@Url.Action("Cupon", "BataClub")"*@>
+                        <span class="glyphicon glyphicon-plus-sign"></span>&nbsp;&nbsp;Agregar
+                    </button>
+                    <button id="btnAgregarBuscar" type="submit" value="0" name="operacion" title="Borrar todo" class="btn btn-danger" @*href="@Url.Action("Cupon", "BataClub")"*@>
+                        <span class="glyphicon glyphicon-trash"></span>&nbsp;&nbsp;Limpiar Lista
+                    </button>
+                }                
+                <button id="btnGenerar" type="button" title="Generar" value="@(ViewBag.Operacion == null ? 2 : 1)" style="float:right" class="btn btn-primary">
+                    <span class="glyphicon glyphicon-barcode"></span>&nbsp;&nbsp;<ins>GENERAR</ins>
+                </button>
+            </div>
+        </div>
+        if(ViewBag.Operacion != null)
+        {
+            <div class="row">
+                <div class="col-md-3"  style="padding-left: 25px;">
+                    <div class="form-group">
+                        <label for="cadena">Cadena:</label>
+                        @Html.DropDownList("cadena2", new MultiSelectList(ViewBag.listCadena, "cbo_codigo", "cbo_descripcion", null), new { @class = "form-control selectpicker", @id = "cadena2", @data_live_search = "true", @multiple = "multiple", @data_actions_box = "true", @data_selected_text_format = "count > 2", @onchange = "ListarTienda(2)" })
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="form-group">
+                        <label for="tienda">Tienda:</label>
+                        @Html.DropDownList("tienda2", new MultiSelectList(ViewBag.listTdaCadena, "cbo_codigo", "cbo_descripcion", null), new { @class = "form-control selectpicker", @id = "tienda2", @data_live_search = "true", @multiple = "multiple", @data_actions_box = "true", @data_selected_text_format = "count > 2" })
+                    </div>
+                </div>
+                <div class="col-md-2">
+                    <div class="form-group">
+                        <label>Año</label>
+                        @Html.DropDownList("anio", new SelectList(ViewBag.anios, "cbo_codigo", "cbo_descripcion", "-1"), new { @class = "form-control form-control-sm selectpicker anio", @id = "anio", @name = "anio", @data_informe = 3 })
+                    </div>
+                </div>
+            </div>
+        }
+        <div class="row">
+            @if (ViewBag.Operacion == null)
+            {
+                <div class="col-md-12" style="padding-left:25px">
+                    <strong>Cantidad de cupones a generar: <mark id="nroCupones"></mark></strong>
+                </div>
+            }
+        </div>
+    }
+    @if (ViewBag.Operacion == null)
+    {
+        <div class="box-body" id="lista" style="padding-bottom: 20px;">
+            @{Html.RenderPartial("_TableCupon", Model);}
+        </div>
+    }
+
+</div>
+<div class="modal fade" id="modalResultCupones" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+    <div class="modal-dialog  modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="row">
+                    <div class="col-md-6">
+                        <p style="font-size:medium" class="text-primary modal-title" id="myModalLabel"><strong class="text-danger" id="descPromCupLista"></strong></p>
+                        <p style="font-size:medium" class="text-primary modal-title" id="myModalLabel"><b>Lista de Cupones generados: &nbsp;</b></p>
+                    </div>
+                    <div class="col-md-6 text-right">
+                        <a href="@Url.Action("ListaCuponesExcel","BataClub")" class="btn btn-success btn-sm"><i class="glyphicon glyphicon-export"></i>&nbsp;&nbsp;Exportar Lista</a>
+                    </div>
+                </div>
+            </div>
+            <div style="font-size:small" class="modal-body" id="divListaCupones">
+
+            </div>
+            <div class="modal-footer">
+                <a href="@Url.Action("Promociones" , "BataClub")" class="btn btn-primary" onclick=""><i class="glyphicon glyphicon-arrow-left"></i>&nbsp;&nbsp;Terminar y Salir</a>
+            </div>
+        </div>
+    </div>
+</div>
+<script src="~/Scripts/bootstrap-select.min.js"></script>
+<script src="@Url.Content("~/Scripts/bootstrap.min.js")"></script>
+<script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
+
+<script>
+    $(document).ready(function () {
+        $("#cadena").selectpicker('selectAll');
+        @if (ViewBag.Operacion != null)
+        {
+            <text>$("#cadena2").selectpicker('selectAll');</text>
+        }
+        $("#btdpI").click(function () {
+            $("#fechaI").datepicker('show')
+        });
+        $('#fechaI').datepicker({
+            format: "dd-mm-yyyy",
+            autoclose: true,
+            maxDate: new Date(),
+        });
+
+        $("#btdp").click(function () {
+            $("#fechaF").datepicker('show')
+        });
+        $('#fechaF').datepicker({
+            format: "dd-mm-yyyy",
+            autoclose: true,
+            maxDate: new Date(),
+        });
+        $("#btnGenerar").click(function () {
+            var _titulo = "";
+            swal({
+                title: "Generar Cupones",
+                text: "¿Desea generar cupones para la promocion?",
+                icon: "warning",
+                buttons: true,
+                dangerMode: true,
+            })
+            .then((cambiar) => {
+                if (cambiar) {
+                    var promocion = $("#promocion").val();
+                    //promocion = (promocion == null ? "" : promocion);
+                    var dscto = $("#dscto").val(); //== null ? -1 : $("#dscto").val();
+                    var fechaF = $("#fechaF").val(); //== null ? "" : $("#fecha").val();
+                    var fechaI = $("#fechaI").val(); //== null ? "" : $("#fecha").val();
+                    var prefix = $("#promOrce").val(); //== null ? "" : $("#fecha").val();
+                    var pares = $("#pares").val(); //== null ? -1 : $("#pares").val();
+                    var mesCumple = $("#mesCumple").val();
+                    var genero = $("input[name='genero']:checked").val(); //$("#genero").val();
+                    var operacion = $("#btnGenerar").val();//operacion
+                    var tienda = ((($("#tienda option:not(:selected)").length == 0 && $("#tienda > option").length > 1) && ($("#cadena option:not(:selected)").length == 0 && $("#cadena > option").length > 1)) ? "" : $('#tienda').val()); //$("#tienda").val();
+                    var tienda2 = ((($("#tienda2 option:not(:selected)").length == 0 && $("#tienda2 > option").length > 1) && ($("#cadena2 option:not(:selected)").length == 0 && $("#cadena2 > option").length > 1)) ? "" : $('#tienda2').val()); //$("#tienda").val();
+                    var anio = $("#anio").val();
+                    tienda = (tienda == null ? "" : tienda);
+                    tienda2 = (tienda2 == null ? "" : tienda2);
+                    waitingDialog.show('Este proceso puede tardar unos minutos', { headerText: 'Espere un momento por favor.' });
+                    $.ajax({
+                        type: "POST",
+                        url: '@Url.Action("BATACLUB_INSERTAR_CUPONES", "BataClub")',
+                        data: {
+                            operacion: operacion, promocion: promocion, dscto: dscto, fechaF: fechaF, pares: pares, mesCumple: mesCumple,
+                            genero: genero, tienda: tienda, tienda2: tienda2, anio: anio, fechaI: fechaI, prefix: prefix
+                        },
+                        dataType: "json",
+                        success: function (data) {
+                            waitingDialog.hide();
+                            if (data.estado == 1) {
+                                _prom_id = data.prom_id;
+                                swal({
+                                    title: "OK",
+                                    text: data.mensaje,
+                                    icon: "success"
+                                }).then((value) => {
+                                    //waitingDialog.show('', { headerText: 'Espere un momento por favor.' });
+                                    $.ajax({
+                                        type: "Post",
+                                        url: '@Url.Action("getListaCupProm", "BataClub")',
+                                        data: { operacion: "G" },
+                                        success: function (data) {
+                                            waitingDialog.hide();
+                                            $("#divListaCupones").html(data);
+                                            $("#descPromCupLista").html(_prom_id + " - " + promocion);
+                                            $("#modalResultCupones").modal({ backdrop: 'static', keyboard: false });
+                                        },
+                                        error: function (xhr) {
+                                            waitingDialog.hide();
+                                            toastr.error(xhr, 'Mensaje');
+                                        }
+                                    });
+                                });
+                            } else {
+                                swal({
+                                    title: "Error",
+                                    text: data.mensaje,
+                                    icon: "error",
+                                    dangerMode: true,
+                                });
+                            }
+                        },
+                        error: function (XMLHttpRequest, textStatus, errorThrown) {
+                            waitingDialog.hide();
+                            var error = eval("(" + XMLHttpRequest.responseText + ")");
+                            alert(error.Message);
+                        }
+                    });
+                }
+            });
+        });
+    });
+    function ListarTienda(sel) {
+        var _sel = (sel == null || sel == '' ? 1 : _sel);
+        var cadenas = _sel == 1 ? $("#cadena").val() : $("#cadena2").val();
+        cadenas = cadenas == null ? "" : cadenas.toString();
+        //waitingDialog.show('Espere un momento por favor');
+        $.ajax({
+            type: "POST",
+            url: '@Url.Action("get_tda_cadena", "BataClub")',
+            data: { cadenas: cadenas },
+            success: function (resultado) {
+                //waitingDialog.hide();
+                if (_sel == 1) {
+                    $('#tienda').html(ParseJSONSelectList(resultado));
+                    $('#tienda').selectpicker('refresh');
+                    $("#tienda").selectpicker('selectAll');
+                } else {
+                    $('#tienda2').html(ParseJSONSelectList(resultado));
+                    $('#tienda2').selectpicker('refresh');
+                    $("#tienda2").selectpicker('selectAll');
+                }
+
+            },
+            error: function (XMLHttpRequest, textStatus, errorThrown) {
+                //waitingDialog.hide();
+                var error = eval("(" + XMLHttpRequest.responseText + ")");
+                swal(error.Message);
+            }
+        });
+    }
+    function ParseJSONSelectList(JSONData) {
+        var html = '';
+        var len = JSONData.length;
+        for (var i = 0; i < len; i++) {
+            html += '<option value="' + JSONData[i].cbo_codigo + '"' + (JSONData[i].Selected == true ? ' Selected ' : '') + '>' + JSONData[i].cbo_descripcion + '</option>';
+        }
+        return html;
+    }
+</script>

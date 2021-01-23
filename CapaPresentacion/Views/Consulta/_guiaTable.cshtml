@@ -1,0 +1,300 @@
+﻿<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/buttons/1.5.1/css/buttons.dataTables.min.css" />
+
+<style type="text/css">
+    .dt-buttons {
+        display: none;
+    }
+    #example_filter{display:none;}
+</style>
+@*<a href="#" class="btn btn-success btn-sm">
+    <span class="glyphicon glyphicon-download-alt"></span>
+</a>*@
+@*<div> <a href="" onclick="get_url()" class="icon-link icon-primary icon-large" target="_blank"><i class="glyphicon glyphicon-trash"></i></a></div>*@
+@*<button title="Descargar Archivo" class="btn btn-primary"><span class="glyphicon glyphicon-download-alt"></span></button>*@
+<table id="example" class="table table-hover dataTable  table-striped table-responsive">    
+    <thead>
+        <tr style="background-color:#3d566e; color:#ecf0f1">
+            <th>Guía Origen</th>
+            <th>Guía Destino</th>
+            <th>Tienda Origen</th>
+            <th>Tienda Destino</th>
+            <th>Cant. Despd</th>
+            <th>Cant. Fmd</th>
+            <th>Fecha Destino</th>
+            <th>Envio</th>
+            <th>Fecha Envio</th>
+            <th>Acciones</th>
+            <th>Fecha recepción</th>
+        </tr>
+    </thead>
+    <tbody data-bind="foreach:"></tbody>
+    <tfoot>
+        <tr>
+            <th>Guía Origen</th>
+            <th>Guía Destino</th>
+            <th>Tienda Origen</th>
+            <th>Tienda Destino</th>
+            <th>Cant. Despd</th>
+            <th>Cant. Fmd</th>
+            <th>Fecha Destino</th>
+            <th>Envio</th>
+            <th>Fecha Envio</th>
+            <th>Acciones</th>
+            <th>Fecha recepción</th>
+        </tr>
+    </tfoot>
+</table>
+
+<div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" ng-app>
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div id='myModalContent'></div>
+        </div>
+    </div>
+</div>
+
+<script src='https://cdn.datatables.net/buttons/1.5.1/js/dataTables.buttons.min.js'></script>
+<script src='//cdnjs.cloudflare.com/ajax/libs/jszip/3.1.3/jszip.min.js'></script>
+<script src='//cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.32/pdfmake.min.js'></script>
+<script src='//cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.32/vfs_fonts.js'></script>
+<script src='//cdn.datatables.net/buttons/1.5.1/js/buttons.html5.min.js'></script>
+
+
+<script>
+    $(document).ready(function () {
+    //    alert("entro a _guiatable.cshmtl - document ready");
+        $('.table').dataTable({
+            "language": {
+                "url": "../Scripts/DataTables/Spanish.json"
+            },
+            "bProcessing": true, // se agrego para probar
+            "bServerSide": true,
+            "bAutoWidth": false,
+            "sAjaxSource": '@Url.Action("getGuiaAjax", "Consulta")',
+            "fnServerParams": function (aoData) {
+                aoData.push({ "name": "tda_destino", "value": $('#txtTda').val() });
+                aoData.push({ "name": "num_guia", "value": $.trim($('#numguia').val()) });
+            },
+            "bdestroy": true,
+            "start": 0,
+            "order": [0, "asc"],
+            "bDeferRender": true,
+            "aoColumns": [
+                    { "sName": "num_gudis", "mData": "num_gudis" },
+                    { "sName": "num_guia", "mData": "num_guia" },
+                    { "sName": "tienda_origen", "mData": "tienda_origen" },
+                    { "sName": "tienda_destino", "mData": "tienda_destino" },
+                    { "sName": "cant_despd", "mData": "cant_despd" },
+                    { "sName": "cant_fmd", "mData": "cant_fmd" },
+                    { "sName": "fecha_des", "mData": "fecha_des" },
+                    {
+                        "render": function (data, type, full) {
+                           // console.log(full.desc_send_tda);
+                            if (full.desc_send_tda == 'X') {
+                                return '<div style="display: block;background-color: #41b341;" class="badge badge-pill badge-success disabled"><a class="badge badge-success disabled" style=" background-color: #41b341;"  >Enviado</a></div>';
+                            } else {
+                                return '<div style="display: block;background-color: #3d566e;" class="badge badge-pill badge-default disabled"><a class="badge badge-default disabled" style=" background-color: #3d566e;"  >No enviado</a></div>';
+                            }
+                        }
+                    },
+                    { "sName": "fec_env", "mData": "fec_env" },
+                    {
+                        "render": function (data, type, full) {
+                            //if (full.desc_send_tda == 'X') {
+                                //return '<div> <a title="Guias ya enviados" target="_blank" class="btn btn-default btn-sm"> <span class="glyphicon glyphicon-send"></span> Ya Enviado</a></div>';
+                            //} else {
+                                var desc_almac = full.tienda_origen.split('-');
+                                var envio = "'" + desc_almac[0] + "','" + full.num_gudis + "'"
+                          //      console.log(full.desc_send_tda);
+                               // console.log(desc_almac[0]);
+                              //  return '<div> <a title="Enviar Guía" target="_blank" data-desc-almac="' + desc_almac[0] + '" data-num-gudis="' + full.num_gudis + '" class="js-open-popup btn btn-primary btn-sm"> <span class="glyphicon glyphicon-send"></span> Enviar</a></div>';
+                            //}
+                              //  console.log(full.desc_send_tda);
+                               // console.log(full.mc_id);
+                            //  console.log(full);
+                                var diferencia = ((full.cant_despd - full.cant_fmd) != 0) && full.con_id == 32;
+
+                                var botones = '<div>';
+                                if (full.desc_send_tda == 'X' && full.mc_id > 0) {
+                                   // return '<div style="display: block;background-color: #41b341;" class="badge badge-pill badge-success"><a class="badge badge-success" style=" background-color: #41b341;"  >Enviado</a></div>';
+                                    botones += '<a title="Enviado" target="_blank" class="js-open-popup btn btn-default btn-sm disabled"> <span class="glyphicon glyphicon-send"></span>' + (diferencia ? '' : '&nbsp;&nbsp;Enviado') + '</a>';
+                                }
+                                else {
+                                    botones += '<a title="Enviar Guía" target="_blank" data-desc-almac="' + desc_almac[0] + '" data-num-gudis="' + full.num_gudis + '" class="js-open-popup btn btn-primary btn-sm"> <span class="glyphicon glyphicon-send"></span>' + (diferencia ? '' : '&nbsp;&nbsp;Enviado') + '</a>';
+                                }
+                                if (diferencia) {
+                                    botones += ' <a title="Reprocesar" target="_blank" data-desc-almac="' + desc_almac[0] + '" data-num-gudis="' + full.num_gudis + '" class="reprocesar btn btn-warning btn-sm"> <span class="glyphicon glyphicon-repeat"></span>' + (diferencia ? '' : '&nbsp;&nbsp;Reprocesar') + '</a>';
+                                }
+                                return botones+'</div>';
+                        }
+                    },            
+                   { "sName": "fec_recep", "mData": "fec_recep" },
+            ],
+            "createdRow": function (row, mData, dataIndex) {
+                //console.log(mData.file_leido)
+                if (((mData.cant_despd - mData.cant_fmd) != 0) && mData.con_id == 32 ) {
+                    //console.log(mData.file_leido)
+                    $(row).addClass('text-danger text-bold');
+                }
+            },
+            dom: 'Bfrtip',
+            buttons: [
+            {
+                extend: 'excelHtml5',
+                title: 'Bataclub_xls'
+            },
+            {
+                extend: 'csvHtml5',
+                title: 'BataClub_csv'
+            },
+            {
+                extend: 'pdfHtml5',
+                title: 'BataClub_pdf'
+            },
+            'copyHtml5',
+            ]
+        });
+
+      
+    });
+    $('#form1').on('keypress, click', function () {
+        return false;
+    });
+    //$('#btnSearch').on('click', function () {
+    //    waitingDialog.show('Espere un momento por favor');
+
+    //    $('.table').DataTable().ajax.reload(function () {
+    //        waitingDialog.hide();
+    //    });
+
+    //    return false;
+    //});
+    $('.table').on('click', '.js-open-popup', function (e) {
+        _popupGuide($(this).attr('data-desc-almac'), $(this).attr('data-num-gudis'));
+    });
+
+    function _popupGuide(desc_almac, num_gudis) {
+        var strhtml = ''
+        strhtml += '<div class="modal-header modal-header-danger" style="margin-top:0px;margin-bottom:0px;padding-top:2px;padding-bottom:2px;">'
+        strhtml += '<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>'
+        strhtml += '<h5 class="modal-title" id="myModalLabel">'
+        strhtml += '<table style="border-bottom:0px;font-size:14px;width:50%;">'
+        strhtml += '<tr>'
+        strhtml += '<td style="font-size:14px;width:100%;text-align:left;">¡Confirmar envío de guía!</td>'
+        strhtml += '</tr>'
+        strhtml += '</table>'
+        strhtml += '</h5>'
+        strhtml += '</div>'
+        strhtml += '<div class="modal-body">'
+        strhtml += '¿Desea confirmar el envio de guía <b>' + num_gudis + '</b> del alamacen <b>' + desc_almac + '</b> ?.'
+        strhtml += '</div>'
+        strhtml += '<div class="modal-footer" style="margin-top:-30px">'
+        strhtml += '<button type="button" class="btn btn-default" data-dismiss="modal">Cancelar</button>'
+        strhtml += '<button type="button" class="js-send-guide btn btn-primary"  data-desc-almac="' + desc_almac + '" data-num-gudis="' + num_gudis + '" data-dismiss="modal">Enviar Guias</button>'
+        strhtml += '</div>'
+
+        var options = { "backdrop": "static", keyboard: true };
+
+        $('#myModalContent').html(strhtml);
+        $('#myModal').modal(options);
+        $('#myModal').modal('show');
+    }
+
+    $('.table').on('click', '.reprocesar', function (e) {
+        var num_gudis = $(this).attr('data-num-gudis');
+        var tda = $("#dwtda").val();
+        var num_guia = $("#numguia").val();
+        swal({
+            title: "Reprocesar",
+            text: "¿Desea reprocesar el documento: " + $(this).attr('data-num-gudis')+ "?",
+            icon: "warning",
+            buttons: ["Cancelar", true  ],
+            dangerMode: true,
+        }).then((value) => {
+            switch (value) {
+                case true:
+                    waitingDialog.show('Espere un momento por favor');
+                    $.ajax({
+                        type: "POST",
+                        url: '@Url.Action("ReprocesarGuide", "Consulta")',
+                        data: { desc_almac: $(this).attr('data-desc-almac'), num_gudis: $(this).attr('data-num-gudis'), tda_destino: $(this).attr('data-num-gudis'), tda_destino: tda, num_guia: num_guia },
+                        success: function (data) {
+                            waitingDialog.hide();
+                            if (data.estado == 1) {
+                                $('.table').DataTable().ajax.reload();
+                                swal({
+                                    title: "Reprocesar",
+                                    text: "La guia: " + num_gudis + ", fue reprocesada con éxito.",
+                                    icon: "success"                                    
+                                });
+                                $(".swal-text").css("color", "rgba(0, 0, 0, 0.64)")
+                            } else {
+                                //waitingDialog.hide();
+                                swal({
+                                    title: "Error",
+                                    text: "" + data.resultados,
+                                    icon: "error",
+                                    dangerMode: true,
+                                });
+                            }
+                        },
+                        error: function (XMLHttpRequest, textStatus, errorThrown) {
+                            var error = eval("(" + XMLHttpRequest.responseText + ")");
+                            waitingDialog.hide();
+                            toastr.error('Hubo un error en el registro : ' + error, "Alerta");
+                        }
+                    });
+            }
+        });
+        //_popupGuide($(this).attr('data-desc-almac'), $(this).attr('data-num-gudis'));
+    });
+
+    $('#myModal').on('click', '.js-send-guide', function (e) {
+        _sendGuide($(this).attr('data-desc-almac'), $(this).attr('data-num-gudis'));
+    });
+    function _sendGuide(desc_almac, num_gudis) {
+        waitingDialog.show('Espere un momento por favor');
+
+        $.ajax
+          ({
+              url: '../Consulta/SendGuide',
+              dataType: "json",
+              type: "POST",
+              data: {
+                  desc_almac: desc_almac,
+                  num_gudis: num_gudis
+              },
+              success: function (data, textStatus, XMLHttpRequest) {
+                  waitingDialog.hide();
+
+                  console.log(data);
+
+                  if ((data.Success).toString() == "true") {
+
+                      if (data.Message == "1") {
+                          toastr.success('Se envio correctamente la guía ' + num_gudis + ' del almacen ' + desc_almac, "Mensaje");
+
+                          $('.table').DataTable().ajax.reload();
+                          waitingDialog.hide();
+
+                      } else {
+                          toastr.error('No se pudo enviar la guía ' + num_gudis + ' del almacen ' + desc_almac, "Error");
+                          waitingDialog.hide();
+                      }
+
+                  } else {
+                      toastr.error('No se pudo procesar el enviar la guía ' + num_gudis + ' del almacen ' + desc_almac, "Error");
+                      waitingDialog.hide();
+                  }
+
+              },
+              error: function (xhr) {
+                  waitingDialog.hide();
+                  toastr.error(xhr, 'Error');
+                  waitingDialog.hide();
+              }
+          })
+
+
+    }
+</script>

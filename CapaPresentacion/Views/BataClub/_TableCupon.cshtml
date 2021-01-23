@@ -1,0 +1,110 @@
+﻿
+<table id="example2" class="table table-hover dataTable  table-striped table-responsive">
+    <thead>
+        <tr style="background-color:#3d566e; color:#ecf0f1">
+            <th>DNI</th>
+            <th>Nombres</th>
+            <th>Genero</th>
+            <th>Mes Cumpleaños</th>            
+            <th>Correo</th>
+            <th>BataClub</th>
+            <th>Borrar</th>
+            
+        </tr>
+    </thead>
+    <tbody data-bind="foreach:"></tbody>
+    <tfoot>
+        <tr>
+            <th>DNI</th>
+            <th>Nombres</th>
+            <th>Genero</th>
+            <th>Mes Cumpleaños</th>
+            <th>Correo</th>
+            <th>BataClub</th>
+            <th>Borrar</th>
+        </tr>
+    </tfoot>
+</table>
+
+<script>
+    $(document).ready(function () {
+        //waitingDialog.show('Espere un momento por favor');
+        var dniEliminar = "";
+        $('#example2').DataTable({
+            "language": {
+                "url": "../Scripts/DataTables/Spanish.json"
+            },
+            "bProcessing": false,
+            "bServerSide": true,
+            "bAutoWidth": false,
+            "sAjaxSource": '@Url.Action("getTableCuponAjax", "BataClub")',
+            "fnServerParams": function (aoData) {
+                aoData.push({ "name": "dniEliminar", "value": dniEliminar });
+            },
+            "fnServerData": function (sSource, aoData, fnCallback) {
+                $.getJSON(sSource, aoData, function (json) {
+                    $('#nroCupones').html("" + json.iTotalRecords);
+                    fnCallback(json)
+                });
+            },
+            @if(ViewBag.Operacion == null)
+            {
+            <text>
+                "columnDefs": [{
+                "targets": [ 2,3,5 ],
+                "visible": false,
+                "searchable": false
+                }],
+            </text>
+            }
+            "bdestroy": true,
+            "start": 0,
+            "sort": false,
+            "order": [],
+            "bDeferRender": true,
+            "aoColumns": [
+                    { "sName": "dniCliente", "mData": "dniCliente" },
+                    {
+                        "render": function (data, type, full) {
+                return full.nombresCliente + ' ' + full.apellidosCliente;
+            }
+                    },
+                    { "sName": "genero", "mData": "genero" },
+                    { "sName": "mesCumple", "mData": "mesCumple" },
+                    { "sName": "correo", "mData": "correo" },
+                    {
+                        "render": function (data, type, full) {
+                            if (full.miemBataClub == true) {
+                                return '<label class="text-success"><i class="glyphicon glyphicon-ok"></i></label>'
+                            } else {
+                                return""
+                            }
+                        }
+                    },
+                    {
+                        "render": function (data, type, full) {
+                        var envio = "'" + full.dni + "'"
+                        return '<div> <a title="Eliminar" id="btnEliminar" type="button" data-dni="' + full.dniCliente + '" class="btn btn-danger btn-sm eliminar"> <span class="glyphicon glyphicon-remove" type="button"></span></a></div>';
+                    }, "sClass": "boton-td"
+                    }
+            ]
+        });
+        $('#example2').on('click', '.eliminar', function (e) {
+            dniEliminar = $(this).attr('data-dni');
+            waitingDialog.show('Espere un momento por favor');
+            $('#example2').DataTable().ajax.reload(function () { waitingDialog.hide(); dniEliminar = ""; }, false);
+
+        });
+    });
+
+</script>
+@if (TempData["Success"] != null)
+{
+    <script>toastr.success("@TempData["Success"]");</script>
+}
+else if ((TempData["Error"] != null))
+{
+    <script>toastr.error("@TempData["Error"]");</script>
+}
+
+

@@ -1,0 +1,417 @@
+﻿@{
+    var serializer = new System.Web.Script.Serialization.JavaScriptSerializer();
+    serializer.MaxJsonLength = Int32.MaxValue;
+    var jsonModel = serializer.Serialize(ViewBag.GuiaDetalle);
+}
+
+<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/buttons/1.5.1/css/buttons.dataTables.min.css" />
+
+<style type="text/css">
+    .dt-buttons {
+        display: none;
+    }
+
+.table thead {
+   background-color: #d9534f;
+  color: #FDFDFD;
+}
+
+</style>
+
+<table id="example" class="table table-hover dataTable  table-striped table-responsive table-principal">
+    <thead>
+        <tr style="background-color:#3d566e; color:#ecf0f1">
+            <th>TIENDA ORI.</th>
+            <th>TIENDA DES.</th>
+            <th>NUMERO</th>
+            <th>FECHA</th>
+            <th>PARES</th>
+            <th>V. CALZADO</th>
+            <th>NO CALZADO</th>
+            <th>V. NO CALZADO</th>
+            <th>ESTADO</th>
+            <th>DETALLE</th>
+
+
+        </tr>
+    </thead>
+    <tbody data-bind="foreach:"></tbody>
+    <tfoot>
+        <tr>
+            <th>TIENDA ORI.</th>
+            <th>TIENDA DES.</th>
+            <th>NUMERO</th>
+            <th>FECHA</th>
+            <th>Pares</th>
+            <th>V. CALZADO</th>
+            <th>NO CALZADO</th>
+            <th>V NO CALZADO</th>
+            <th>ESTADO</th>
+            <th>DETALLE</th>
+
+        </tr>
+    </tfoot>
+</table>
+<script src='https://cdn.datatables.net/buttons/1.5.1/js/dataTables.buttons.min.js'></script>
+<script src='//cdnjs.cloudflare.com/ajax/libs/jszip/3.1.3/jszip.min.js'></script>
+<script src='//cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.32/pdfmake.min.js'></script>
+<script src='//cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.32/vfs_fonts.js'></script>
+<script src='//cdn.datatables.net/buttons/1.5.1/js/buttons.html5.min.js'></script>
+
+
+<script>
+    $(document).ready(function () {
+        $('.table-principal').dataTable({
+            "language": {
+                "url": "../Scripts/DataTables/Spanish.json"
+            },
+            "bServerSide": true,
+            "bAutoWidth": false,
+            "sAjaxSource": '@Url.Action("getGuias", "Reporte")',
+            "bdestroy": true,
+            "start": 0,
+            "searching": true,
+
+            //"ordering": false,
+            "order": [0, "asc"],
+            "columnDefs":[{
+                "targets": 1,
+                "orderable": false
+            }],
+
+            "bDeferRender": true,
+            "aoColumns": [
+                    { "sName": "TIENDA_ORI", "mData": "TIENDA_ORI" },
+                    { "sName": "TIENDA_DES", "mData": "TIENDA_DES" },
+                    { "sName": "NUMERO", "mData": "NUMERO" },
+                   { "sName": "FECHA", "mData": "FECHA" },
+                   { "sName": "CALZADO", "mData": "PARES", "sClass": "right" },
+                   { "sName": "VCALZADO", "mData": "VCALZADO", "sClass": "right" },
+                   { "sName": "NOCALZADO", "mData": "NOCALZADO", "sClass": "right" },
+                   { "sName": "VNOCALZADO", "mData": "VNOCALZADO", "sClass": "right" },
+                   { "sName": "ESTADO", "mData": "ESTADO" },
+                   {
+                       "render": function (data, type, full) {
+                           var envio = "'" + full.NUMERO + "'"
+
+                           return '<div> <a title="Ver Detalle"  onclick="verDetalle(' + envio + ')" target="_blank" class="btn btn-primary btn-sm"> <span class="	glyphicon glyphicon-th-list"></span></a></div>';
+                       }
+                   }
+
+
+            ],
+            dom: 'Bfrtip',
+            buttons: [
+           {
+               extend: 'excelHtml5',
+               title: 'Batagui_xls'
+           },
+           {
+               extend: 'csvHtml5',
+               title: 'Batagui_csv'
+           },
+           {
+               extend: 'pdfHtml5',
+               title: 'Batagui_pdf'
+           },
+           'copyHtml5',
+            ]
+        });
+        $('#total_pares')[0].textContent = @ViewBag.total_pares;
+        $('#total_soles_pares')[0].textContent = @ViewBag.total_soles_pares;
+        $('#total_no_calzado')[0].textContent = @ViewBag.total_no_calzado;
+        $('#total_soles_no_calzado')[0].textContent = @ViewBag.total_soles_no_calzado;
+
+    });
+
+    //function verDetalle(numero) {
+    //    alert(numero)
+    //}
+
+    function verDetalle(numero) {
+
+        var data = @Html.Raw(jsonModel);
+        var dataArray = JSON.parse(data);
+
+        var lista_default = dataArray.filter(obj => obj.NUMERO == numero);
+        var style = 'width="10%;"'
+        var style2 = 'width="50%;"'
+        var strtable = '';
+        var theader = '';
+        var tbody = '';
+        theader += '<thead>';
+        theader += '<tr>';
+        theader += '<th ' + style + ' >';
+        theader += '<div class="col-sm-1" style="margin-top:2px;margin-bottom:2px;">';
+        theader += '<label for="disponible">GRUPO</label>';
+        theader += '</div>';
+        theader += '</th>';
+        theader += '<th ' + style + '>';
+        theader += '<div class="col-sm-1" style="margin-top:2px;margin-bottom:2px;">';
+        theader += '<label for="disponible">CATEGORIA</label>';
+        theader += '</div>';
+        theader += '</th>';
+        theader += '<th ' + style + '>';
+        theader += '<div class="col-sm-1" style="margin-top:2px;margin-bottom:2px;">';
+        theader += '<label for="disponible">ARTICULO</label>';
+        theader += '</div>';
+        theader += '</th>';
+        theader += '<th ' + style + '>';
+        theader += '<div class="col-sm-1" style="margin-top:2px;margin-bottom:2px;">';
+        theader += '<label for="disponible">CALIDAD</label>';
+        theader += '</div>';
+        theader += '</th>';
+        theader += '<th ' + style + '>';
+        theader += '<div class="col-sm-2" style="margin-top:2px;margin-bottom:2px;">';
+        theader += '<label for="disponible">P.PLAN</label>';
+        theader += '</div>';
+        theader += '</th>';
+        theader += '<th ' + style2 + '>';
+        theader += '<div class="col-sm-1" style="width:100%;text-align:center;margin-top:2px;margin-bottom:2px;Text">';
+        theader += '<label for="disponible">TALLA/CANTIDAD</label>';
+        theader += '</div>';
+        theader += '</th>';
+        theader += '</tr>';
+        theader += '</thead>';
+
+
+        tbody += '<td   ' + style + '>';
+        tbody += '<div class="col-sm-1" style="width:100%;margin-top:2px;margin-bottom:2px;">';
+        tbody += 'grupo';
+        tbody += '</div>';
+        tbody += '</td>';
+        tbody += '<td   ' + style + '>';
+        tbody += '<div class="col-sm-1" style="width:100%;margin-top:2px;margin-bottom:2px;">';
+        tbody += 'categoria';
+        tbody += '</div>';
+        tbody += '</td>';
+        tbody += '<td  ' + style + '>';
+        tbody += '<div class="col-sm-1" style="width:100%;margin-top:2px;margin-bottom:2px;">';
+        tbody += 'articulo';
+        tbody += '</div>';
+        tbody += '</td>';
+        tbody += '<td   ' + style + '>';
+        tbody += '<div class="col-sm-1" style="width:100%;margin-top:2px;margin-bottom:2px;">';
+        tbody += 'calidad';
+        tbody += '</div>';
+        tbody += '</td>';
+        tbody += '<td   ' + style + '>';
+        tbody += '<div class="col-sm-1" style="width:100%;margin-top:2px;margin-bottom:2px;">';
+        tbody += 'pplan';
+        tbody += '</div>';
+        tbody += '</td>';
+        tbody += '<td  ' + style2 + '>';
+        tbody += '<div class="col-sm-1" style="width:100%;margin-top:2px;margin-bottom:2px;text-align:center;">';
+        tbody += '<table><tr><td><div style="margin-top:2px;margin-right:2px;"><button class="btn btn-white btn-xs"  title="Tallas"  style="width:100%;">T:</button></div></td><td><div style="margin-top:2px;margin-right:2px;"><button class="btn btn-success btn-xs" style="width:100%;">Total</button></div></td>ListvariableTalla</tr><tr><td><div style="margin-top:2px;margin-right:2px;"><button  title="Cantidad"  class="btn btn-white btn-xs" style="width:100%;">C:</button></div></td></td><td><div style="margin-top:2px;margin-right:2px;"><button class="btn btn-success btn-xs" style="width:100%;">VTotal</button></div></td>ListvariableCantidad</tr></table>'
+        tbody += '</div>';
+        tbody += '</td>';
+        tbody += '</tr>';
+
+        var ConstTalla = '<td><div style="margin-top:2px;margin-right:2px;"><button class="btn btn-primary btn-xs"  style="width:100%;" title="Talla"  data-id="codTienda" data-tda="desTiendaS" data-modal="codTalla" data-art="codArticulo"  >variableTalla</button></div></td>'
+        var ConstCantidad = '<td><div style="margin-top:2px;margin-right:2px;"><button class="btn btn-info btn-xs" style="width:100%;text-align:center;">variableCantidad</button></div></td>'
+        var listTalla = '';
+        var listCantidad = '';
+
+        var tpCategoria = '';
+        var linea = '';
+        var categoria = '';
+        var pplan = '';
+        var articulo = '';
+        var calidad = '';
+        var talla = '';
+        var cantidad = ''
+        var total = 0;
+        var listTalla = '';
+        var listCantidad = '';
+        var articulo_old = ''
+        var calidad_old = ''
+        var Body = '';
+
+        var tipo = '';
+        var calzado = '';
+        var Vcalzado = '';
+        var Ncalzado = '';
+        var VNcalzado = '';
+        var Estado = '';
+
+        var fcalzado = 0
+        var fvcalzado = 0.00
+
+        var fncalzado = 0
+        var fnvcalzado = 0.00
+
+        $.each(lista_default, function (index, item) {
+
+            if (index == 0) { articulo_old = item.ARTICULO; calidad_old = item.CALIDAD };
+
+            articulo = item.ARTICULO;
+            calidad = item.CALIDAD;
+
+            tipo = item.TIPO_CATE;
+            calzado = item.PARES;
+            Vcalzado = item.VCALZADO;
+            Ncalzado = item.NOCALZADO;
+            VNcalzado = item.VNOCALZADO;
+            Estado = item.ESTADO;
+
+            fnvcalzado = articulo.charAt(0) == '9' ? fnvcalzado + parseFloat(item.VDETALLE) : fnvcalzado;
+            fncalzado = articulo.charAt(0) == '9' ? fncalzado + parseInt(item.CANTIDAD) : fncalzado;
+
+            fvcalzado = articulo.charAt(0) != '9' ? fvcalzado + parseFloat(item.VDETALLE) : fvcalzado;
+            fcalzado = articulo.charAt(0) != '9' ? fcalzado + parseInt(item.CANTIDAD) : fcalzado;
+
+
+            if (articulo != articulo_old || calidad != calidad_old) {
+
+                var temrBody = tbody
+                temrBody = temrBody.replace("tipo", '');
+                //temrBody = temrBody.replace("tipo", tpCategoria);
+                temrBody = temrBody.replace("grupo", linea);
+                temrBody = temrBody.replace("categoria", categoria);
+                temrBody = temrBody.replace("pplan", pplan);
+                temrBody = temrBody.replace("articulo", articulo_old);
+                temrBody = temrBody.replace("calidad", calidad_old);
+                temrBody = temrBody.replace("VTotal", total);
+                temrBody = temrBody.replace("ListvariableTalla", listTalla);
+                temrBody = temrBody.replace("ListvariableCantidad", listCantidad);
+
+                articulo_old = articulo;
+                calidad_old = calidad;
+                listTalla = '';
+                listCantidad = '';
+                total = 0;
+                Body += temrBody;
+            }
+
+            tpCategoria = item.TIPO_CATE;
+            linea = item.LINEA;
+            categoria = item.CATEGORIA;
+            pplan = item.P_PLAN;
+
+
+            talla = item.TALLA;
+            cantidad = item.CANTIDAD;
+            total += parseInt(cantidad);
+
+            listTalla += ConstTalla;
+            listCantidad += ConstCantidad;
+
+            listTalla = listTalla.replace("variableTalla", talla);
+            listCantidad = listCantidad.replace("variableCantidad", cantidad);
+
+        });
+
+        //alert(parseFloat(fnvcalzado).toFixed(2))
+        //alert(parseFloat(fncalzado).toFixed(2))
+        //alert(parseFloat(fcalzado).toFixed(2))
+        //alert(parseFloat(fvcalzado).toFixed(2))
+
+        var temrBody = tbody
+        temrBody = temrBody.replace("tipo", tpCategoria);
+        temrBody = temrBody.replace("grupo", linea);
+        temrBody = temrBody.replace("categoria", categoria);
+        temrBody = temrBody.replace("pplan", pplan);
+        temrBody = temrBody.replace("articulo", articulo_old);
+        temrBody = temrBody.replace("calidad", calidad_old);
+        temrBody = temrBody.replace("VTotal", total);
+        temrBody = temrBody.replace("ListvariableTalla", listTalla);
+        temrBody = temrBody.replace("ListvariableCantidad", listCantidad);
+
+        articulo_old = articulo;
+        calidad_old = calidad;
+        listTalla = '';
+        listCantidad = '';
+        total = 0;
+        Body += temrBody;
+        var strStyle = '';
+        //alert(calzado)
+        //alert(fcalzado)
+        //alert(Ncalzado)
+        //alert(fncalzado)
+        if (calzado == fcalzado && Ncalzado == fncalzado) {
+            strStyle = 'style="display:none"'
+        }
+
+        strtable = '<table style="width:100%;" class="table table-hover dataTable  table-striped table-responsive" role="grid">' + theader + '<tbody>' + Body + '</tbody>' + '</table>';
+
+        var strhtml = ''
+        strhtml += '<div class="modal-header modal-header-danger" style="margin-top:0px;margin-bottom:0px;padding-top:2px;padding-bottom:2px;">'
+        strhtml += '<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>'
+        strhtml += '<h5 class="modal-title" id="myModalLabel">'
+        strhtml += '<table style="border-bottom:0px;font-size:14px;width:100%;"  class="table-responsive">'
+        strhtml += '<tr>'
+        strhtml += '<td style="font-size:18px;width:100%;text-align:left;"><B>Nro Guia : ' + numero + '</B></td>'
+        strhtml += '</tr>'
+        strhtml += '</table>'
+        strhtml += '</h5>'
+        strhtml += '</div>'
+        strhtml += '<div class="modal-body">'
+        strhtml += '<table class="table table-striped" RULES="none">'
+        strhtml += '<tr>'
+        strhtml += '<td colspan="2" valign="middle"><label>TIPO</label></td>'
+        strhtml += '<td colspan="2">'
+        strhtml += '&nbsp;&nbsp;' + tipo
+        strhtml += '</td>'
+        strhtml += '<td colspan="2" valign="middle"><label>ESTADO</label></td>'
+        strhtml += '<td colspan="2">'
+        strhtml += '&nbsp;&nbsp;' + Estado
+        strhtml += '</td>'
+        strhtml += '</tr>'
+        strhtml += '<tr>'
+        strhtml += '<td colspan="1" valign="middle"><label>CALZADO</label></td>'
+        strhtml += '<td colspan="1">'
+        strhtml += '&nbsp;&nbsp;' + calzado
+        strhtml += '</td>'
+        strhtml += '<td colspan="1" valign="middle"><label>V. CALZADO</label></td>'
+        strhtml += '<td colspan="1">'
+        strhtml += '&nbsp;&nbsp;S/.&nbsp;' + Vcalzado
+        strhtml += '</td>'
+        strhtml += '<td colspan="1" valign="middle"><label>NO CALZADO</label></td>'
+        strhtml += '<td colspan="1">'
+        strhtml += '&nbsp;&nbsp;' + Ncalzado
+        strhtml += '</td>'
+        strhtml += '<td colspan="1" valign="middle"><label>V. NO CALZADO</label></td>'
+        strhtml += '<td colspan="1">'
+        strhtml += '&nbsp;&nbsp;S/.&nbsp;' + VNcalzado
+        strhtml += '</td>'
+        strhtml += '</tr>'
+        strhtml += '<tr ' + strStyle + ' >'
+        strhtml += '<td colspan="1" style="text-align:left;"><button class="btn btn-success btn-xs" style="width:100%;text-align:left;">CALZADO</button></td>'
+        strhtml += '<td colspan="1">'
+        strhtml += '&nbsp;&nbsp;' + fcalzado
+        strhtml += '</td>'
+        strhtml += '<td colspan="1" style="text-align:left;"><button class="btn btn-success btn-xs" style="width:100%;text-align:left;">V. CALZADO</button></td>'
+        strhtml += '<td colspan="1">'
+        strhtml += '&nbsp;&nbsp;S/.&nbsp;' + parseFloat(fvcalzado).toFixed(2)
+        strhtml += '</td>'
+        strhtml += '<td colspan="1" style="text-align:left;"><button class="btn btn-success btn-xs" style="width:100%;text-align:left;">NO CALZADO</button></td>'
+        strhtml += '<td colspan="1">'
+        strhtml += '&nbsp;&nbsp;' + fncalzado
+        strhtml += '</td>'
+        strhtml += '<td colspan="1" style="text-align:left;"><button class="btn btn-success btn-xs" style="width:100%;text-align:left;">V. NO CALZADO</button></td>'
+        strhtml += '<td colspan="1">'
+        strhtml += '&nbsp;&nbsp;S/.&nbsp;' + parseFloat(fnvcalzado).toFixed(2)
+        strhtml += '</td>'
+        strhtml += '</tr>'
+        strhtml += '<tr>'
+
+        strhtml += '</table>'
+        strhtml += strtable
+        strhtml += '</div>'
+        strhtml += '<div class="modal-footer" style="margin-top:-30px">'
+        strhtml += '<button type="button" class="btn btn-default" data-dismiss="modal">Cerrar</button>'
+
+        strhtml += '</div>'
+        var options = { "backdrop": "static", keyboard: true };
+
+        $('#myModalContent').html(strhtml);
+        $('#myModal').modal(options);
+        $('#myModal').modal('show');
+
+
+
+    }
+
+
+
+</script>

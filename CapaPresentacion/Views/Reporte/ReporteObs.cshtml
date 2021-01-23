@@ -1,0 +1,720 @@
+﻿@using CapaEntidad.Util;
+@{
+    ViewBag.Title = "Reporte Obsolescencia";
+    AjaxOptions options = new AjaxOptions
+    {
+        HttpMethod = "GET",
+        InsertionMode = InsertionMode.Replace,
+        UpdateTargetId = "lista",
+        OnComplete = "waitingDialog.hide();",
+        OnBegin = "waitingDialog.show('Espere un momento por favor');",
+        OnFailure = "waitingDialog.hide();"
+    };
+
+}
+
+<link href="~/ContentSelect/bootstrap-select.css" rel="stylesheet" />
+<link href="@Url.Content("~/Content/bootstrap-select.min.css")" rel="stylesheet" type="text/css" />
+
+<style>
+    iframe {
+        border: none;
+        padding: 0;
+        margin: 0;
+        width: 100%;
+        height: 800px;
+    }
+     #lugar {
+  /*border-top-color:  lightsteelblue;*/
+  border-top-color:  #E7E5E5;
+  border-right-color:  #E7E5E5;
+  border-bottom-color: #E7E5E5;
+  border-left-color: #E7E5E5;
+
+  /*border-top-width: 5px;
+  border-left-width: 5px;
+  border-bottom-width: 5px;
+  border-right-width: 5px;*/
+  border-style: solid;
+   border-radius: 10px 10px 10px 10px;
+    -moz-border-radius: 10px 10px 10px 10px;
+    -webkit-border-radius: 10px 10px 10px 10px;
+    margin-left:5px;
+    margin-right:5px;
+ 
+   
+    }
+</style>
+<p class="text-danger">Consulta de reporte de obsolescencia.</p>
+<div class="box box-body box-primary">
+    <table width="100%">
+        <tr>
+        <td width="50%" style="padding:1px">
+            <div id="lugar" class="row">
+
+                <div class="col-sm-4">
+                    <label for="dwCate">Distrito</label>
+                    <div class="form-group">
+                        <div class="form-group">
+                            @Html.DropDownList("dwDis", new SelectList(ViewBag.Distrito, "cod_distri", "des_distri", "-1"), new { @class = "selectpicker", @data_live_search = "true", multiple = "multiple", @id = "dwDis", @name = "dwDis", @onchange = "Listar_Cadena_Tienda()", @data_actions_box = "true", @data_selected_text_format = "count > 2" })
+
+                            @*@Html.DropDownList("dwDis", new SelectList(ViewBag.Distrito, "cod_distri", "des_distri", "-1"), new { @class = "selectpicker", @data_live_search = "true", multiple = "multiple", @id = "dwDis", @name = "dwDis", @onchange = "Listar_Cadena_Tienda()", @data_actions_box = "true", @data_selected_text_format = "count > 2" })*@
+                        </div>
+                    </div>
+                </div>
+                <div class="col-sm-4">
+                    <label for="dwCate">Cadena</label>
+                    <div class="form-group">
+                        <div id="divcad" class="form-group">
+                            @Html.DropDownList("dwcad", new SelectList(ViewBag.Cadena, "cod_cadena", "des_cadena", "0"), new { @class = "selectpicker", multiple = "multiple", @data_live_search = "true", @id = "dwcad", @name = "dwcad" })
+                            @*@Html.DropDownList("dwcad", new SelectList(ViewBag.Cadena, "cod_cadena", "des_cadena", "0"), new { @class = "selectpicker", multiple = "multiple", @data_live_search = "true", @id = "dwcad", @name = "dwcad" })*@
+                        </div>
+                    </div>
+                </div>
+                <div class="col-sm-4">
+                    <label for="dwCate">Tienda</label>
+                    <div class="form-group">
+                        <div id="divtda" class="form-group">
+                            @Html.DropDownList("dwtda", new SelectList(ViewBag.Tienda, "cod_entid", "des_entid", "0"), new { @class = "selectpicker", multiple = "multiple", @data_live_search = "true", @id = "dwtda", @name = "dwtda" })
+                            @*@Html.DropDownList("dwtda", new SelectList(ViewBag.Tienda, "cod_entid", "des_entid", "0"), new { @class = "selectpicker", multiple = "multiple", @data_live_search = "true", @id = "dwtda", @name = "dwtda" })*@
+                        </div>
+                    </div>
+                </div>
+
+            </div> 
+
+        </td>
+            <td width="50%" style="padding:1px">
+                <div id="lugar" class="row">
+
+                    <div style="width:50%" class="col-sm-3">
+                        <label for="txtTda">Calidad</label>
+                        <div class="form-group">
+                            <div id="div_dwCalidad" class="form-group">
+                                @Html.DropDownList("dwCalidad", new SelectList(ViewBag.listCalidad, "cbo_codigo", "cbo_descripcion", "-1"), new { @class = "selectpicker", multiple = "multiple", @id = "dwCalidad", @name = "dwCalidad", @data_actions_box = "true", @data_selected_text_format = "count > 2" })
+                            </div>
+                        </div>
+                    </div>
+                    <div style="width:50%" class="col-sm-3">
+                        <label for="txtTda">Tipo Obs.</label>
+                        <div class="form-group">
+                            <div id="div_dwTipo" class="form-group">
+                                @Html.DropDownList("dwTipoObs", new SelectList(ViewBag.listTipoObs , "cbo_codigo", "cbo_descripcion", "-1"), new { @class = "selectpicker",  @id = "dwTipoObs", @name = "dwTipoObs" })
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </td>
+        </tr>
+        <tr style="padding-top:2px">
+            <td width="100%" colspan="2" style="padding:1px">
+                <div id="lugar" class="row">
+
+                    <div style="width:25%" class="col-sm-3">
+                        <label for="txtTda">Tipo.</label>
+                        <div class="form-group">
+                            <div id="divTipo" class="form-group">
+                               @Html.DropDownList("dwTipo", new SelectList(ViewBag.Tipo, "cbo_codigo", "cbo_descripcion", "0"), new { @class = "selectpicker", @id = "dwTipo", @name = "dwTipo", style = "width:270px;max-width:270px;", @onchange = "ListarGrupo()" })
+                            </div>
+                        </div>
+                    </div>
+                    <div style="width:25%" class="col-sm-3">
+                        <label for="dwGrupo">Grupo</label>
+                        <div class="form-group">
+                            <div id="divgrupo" class="form-group">
+                                @Html.DropDownList("dwGrupo", new SelectList(ViewBag.Categoria, "cbo_codigo", "cbo_descripcion", "0"), new { @class = "selectpicker", multiple = "multiple", @data_live_search = "true", @id = "dwGrupo", @name = "dwGrupo", style = "width:270px;max-width:270px;", @onchange = "ListarCategoria()", @data_actions_box = "true", @data_selected_text_format = "count > 2" })
+                            </div>
+                        </div>
+                    </div>
+                    <div style="width:25%" class="col-sm-3">
+                        <label for="dwCate">Categoria</label>
+                        <div class="form-group">
+                            <div id="divcateg" class="form-group">
+                                @Html.DropDownList("dwCate", new SelectList(ViewBag.Categoria, "cbo_codigo", "cbo_descripcion", "0"), new { @class = "selectpicker", @data_live_search = "true", @id = "dwCate", @data_actions_box = "true", @data_selected_text_format = "count > 2" })
+                            </div>
+                        </div>
+                    </div>
+                    <div style="width:25%" class="col-sm-3">
+                        <label for="txtTda"></label>
+                        <div class="form-group">
+                            <div id="divButton" class="form-group">
+                                <button type="button" class="btn btn-primary" onclick="javascript: MostrarReporte()">
+                                    <span class="glyphicon glyphicon-th-list"></span>&nbsp;Ver Reporte
+                                </button>
+
+                            </div>
+                        </div>
+                    </div>                      
+
+
+               </div>
+
+            </td>
+        </tr>
+        <tr style="padding-top:2px">
+            <td width="100%" colspan="2" style="padding:1px">
+                <div id="lugar" class="row">
+
+                    <div style="width:20%" class="col-sm-3">
+                        <label for="txtTda">Rango.</label>
+                        <div class="form-group">
+                            <div id="div_dwRango" class="form-group">
+                                @Html.DropDownList("dwRango", new SelectList(ViewBag.lisRango, "cbo_codigo", "cbo_descripcion"), new { @class = "selectpicker", @id = "dwRango", @name = "dwRango",  @data_actions_box = "true", @data_selected_text_format = "count > 2" })
+                            </div>
+                        </div>
+                    </div>
+                    <div style="width:20%" class="col-sm-3">
+                        <label for="rprc"></label>
+                        <div class="form-group">
+                            <div class="col-sm-12 checkbox text-danger text-bold" id="">
+                                <label>
+                                    <input type="checkbox" name="idRango" onchange="validarRangoPrecio()" id="idRango" value="1" /> Rango de precio.
+                                </label>
+                            </div>
+                            @*<div class="col-sm-12 checkbox text-danger text-bold" id="">
+                                <div id="divRangoPrc" class="form-group">
+                                    &nbsp;&nbsp;&nbsp;&nbsp;<input type="checkbox" onchange="validarRangoPrecio()" id="idRango" name="idRango" value="1">&nbsp;&nbsp;<label>Rango de precio</label>
+                                </div>
+                            </div>*@
+                         </div>
+                    </div>                  
+                    <div  id="divprcFin" style="width:20%;display:none" class="col-sm-3">
+                        <label for="lbltxtprcIni">Precio Ini.</label>
+                        <div class="form-group">
+                            <div id="divtxtprcIni" class="form-group">
+                                <input name="txtprcIni" type="number" id="txtprcIni" value="-1" style="width:100%" autofocus class="form-control" />
+                            </div>
+                        </div>
+                    </div>
+                    <div id="divprcIni" style="width:20%;display:none" class="col-sm-3">
+                        <label for="lbltxtprcIni">Precio Fin.</label>
+                        <div class="form-group">
+                            <div id="divtxtprcFin" class="form-group">
+                                <input name="txtprcFin" type="number" id="txtprcFin" value="-1" style="width:100%" autofocus class="form-control" />
+                            </div>
+                        </div>
+                    </div>
+                    <div style="width:20%" class="col-sm-3">
+                        <label for=""></label>
+                        <div class="form-group">
+                            <div class="col-sm-12 checkbox text-primary text-bold" >
+                                <label>
+                                    <input type="checkbox" name="resumen" id="resumen" value="1" /> Resumen
+                                </label>
+                            </div>
+                            @*<div class="col-sm-12 checkbox text-danger text-bold" id="">
+                    <div id="divRangoPrc" class="form-group">
+                        &nbsp;&nbsp;&nbsp;&nbsp;<input type="checkbox" onchange="validarRangoPrecio()" id="idRango" name="idRango" value="1">&nbsp;&nbsp;<label>Rango de precio</label>
+                    </div>
+                </div>*@
+                        </div>
+                    </div>  
+                </div>
+
+            </td>
+        </tr>
+     
+    </table>
+     
+</div>
+<div class="row">
+    <div class="col-md-12">
+        <div id="ifrReporte" class="well" style="width: 100%; height: 800px;">
+            <iframe id="load" src="" frameborder="0" marginheight="1"
+                    marginwidth="1" scrolling="auto" onload="javascript: waitingDialog.hide();"></iframe>
+        </div>
+
+
+    </div>
+</div>
+
+<script src="~/Scripts/bootstrap-select.min.js"></script>
+<script src="@Url.Content("~/Scripts/bootstrap.min.js")"></script>
+
+<script src="~/Scripts/Linkend/linq.min.js"></script>
+
+<script src="~/Scripts/BI.js"></script>
+<script>
+        @*function ListarTienda() {
+           var data = function () { return @Html.Raw(Json.Encode(ViewBag.ClTienda)); }();
+            var tipo=@ViewBag.tda;
+
+            var dataArray = data.Data;
+            var strTipo = $('#dwDis').val();
+            var listar = [];
+
+            if (strTipo != null) {
+                var lista_filter = (strTipo == "-1") ? dataArray.filter(obj => obj.cod_distri != strTipo) : dataArray.filter(obj => obj.cod_distri === strTipo || obj.cod_distri=='0');
+                $.each(lista_filter, function (index, item) {
+
+                    listar.push(item);
+                });
+            }
+
+            llenarCombo("div_tda", "dwtda", listar, '0', '', "",tipo);
+            //ListarCategoria();
+            //ListarSubCategoria()
+        }*@
+
+        function llenarCombo(DivId, IdControl, Data, codDefecto, desDefecto, onchangeFuncion,tipo) {
+
+            $('#' + IdControl).find('option').remove();
+
+
+
+            var str =(tipo=='1')? '<select class="selectpicker" multiple = "multiple"  data-live-search="true" onchangeFuncion data-width="100%" id="' + IdControl + '" name="' + IdControl + '" data-actions-box="true"  data-selected-text-format="count > 2" >':'<select class="selectpicker"  data-live-search="true" onchangeFuncion data-width="100%" id="' + IdControl + '" name="' + IdControl + '"  data-actions-box="true"  data-selected-text-format="count > 2" > ';
+            var ItemNormal = '<option value="codItem">desItem</option>';
+            var colectItemNormal = '';
+
+            //if (codDefecto != '') { str += '<option value="' + codDefecto + '" selected="selected">------' + desDefecto + '------</option>'; }
+
+            if (onchangeFuncion != '') { onchangeFuncion = 'onchange = "' + onchangeFuncion + '()"' }
+            str = str.replace("onchangeFuncion", onchangeFuncion);
+
+            $.each(Data, function (index, item) {
+
+                colectItemNormal = colectItemNormal + ItemNormal
+                var strSelected = '"';
+
+                if (item.cod_entid == codDefecto) {
+                    strSelected = '" selected="selected" '
+
+                }
+                strSelected = '" selected="selected" '; // seleccionar todos al cargar
+                colectItemNormal = colectItemNormal.replace("codItem", item.cod_entid + strSelected);
+                colectItemNormal = colectItemNormal.replace("desItem", item.des_entid);
+
+            });
+
+            str += colectItemNormal
+            str += '</select>'
+
+            document.getElementById(DivId).innerHTML = str
+
+            $('.selectpicker').selectpicker({
+                liveSearch: true,
+                showSubtext: true
+            });
+
+        }
+
+        function llenarComboAlt(DivId, IdControl, Data, codDefecto, desDefecto, onchangeFuncion) {
+
+            $('#' + IdControl).find('option').remove();
+            var str = '<select class="selectpicker"  multiple = "multiple"  data-live-search="true" onchangeFuncion data-width="100%" id="' + IdControl + '" name="' + IdControl + '" data-actions-box="true"  data-selected-text-format="count > 2" >';
+            var ItemNormal = '<option value="codItem>desItem</option>';
+            var colectItemNormal = '';
+
+            if (onchangeFuncion != '') { onchangeFuncion = 'onchange = "' + onchangeFuncion + '()"' }
+            str = str.replace("onchangeFuncion", onchangeFuncion);
+
+            $.each(Data, function (index, item) {
+
+                colectItemNormal = colectItemNormal + ItemNormal
+                var strSelected = '"';
+
+                if (item.cbo_codigo == codDefecto) {
+                    strSelected = '" selected="selected" '
+
+                }
+                strSelected = '" selected="selected" '
+                colectItemNormal = colectItemNormal.replace("codItem", item.cbo_codigo + strSelected);
+                colectItemNormal = colectItemNormal.replace("desItem", item.cbo_descripcion);
+
+            });
+
+            str += colectItemNormal
+            str += '</select>'
+
+            document.getElementById(DivId).innerHTML = str
+
+            $('.selectpicker').selectpicker({
+                liveSearch: true,
+                showSubtext: true
+            });
+
+        }
+</script>
+<script>
+    $(document).ready(function () {
+        //$("#dwDis").selectpicker('selectAll');
+        //$("#dwtda").selectpicker('selectAll');
+
+        $('#dwDis option').attr("selected", "selected");
+        $('#dwDis').selectpicker('refresh');
+
+        $('#dwCad option').attr("selected", "selected");
+        $('#dwCad').selectpicker('refresh');
+
+        ListarCadena();
+        ListarTienda();
+
+
+        $("#dwCalidad").selectpicker('selectAll');
+        $("#dwGrupo").selectpicker('selectAll');
+        $("#dwCate").selectpicker('selectAll');           
+            ListarGrupo();
+        });      
+    function Listar_Cadena_Tienda() {
+        ListarCadena();
+        ListarTienda();
+    }
+    function ListarCadena() {
+        var dataArray = function () { return @Html.Raw(Json.Encode(ViewBag.DisCadTda)); }();
+        // var dataArray = data.Data;
+        var strTipo = $('#dwDis').val();
+
+        var listar = [];
+
+        if (strTipo != null) {
+
+            if (strTipo == "-1") {
+                var lista_filter = (strTipo == "-1") ? dataArray.filter(obj => obj.cod_distri != strTipo) : dataArray.filter(obj => obj.cod_distri === strTipo || obj.cod_distri == '0');
+                $.each(lista_filter, function (index, item) {
+
+                    listar.push(item);
+                });
+            } else {
+
+                var lista_filter = dataArray.filter(obj => obj.cod_distri == '0');
+                $.each(lista_filter, function (index, item) {
+
+                    listar.push(item);
+                });
+
+                $.each(strTipo, function (index2, item2) {
+
+                    var lista_filter = dataArray.filter(obj => obj.cod_distri === item2);
+                    $.each(lista_filter, function (index, item) {
+
+                        listar.push(item);
+                    });
+
+                });
+            }
+        }
+
+
+        var group_cadena = Enumerable.from(listar)
+        .groupBy(
+        null,
+        null,
+        "{ cod_cadena: $.cod_cadena, des_cadena: $.des_cadena}",
+        "'' + $.cod_cadena + '-' + $.des_cadena"
+        ).toArray();
+
+
+        llenarComboCad("divcad", "dwcad", group_cadena, '0', '', "ListarTienda", '1');
+    }
+    function ListarTienda()
+    {
+        var dataArray = function () { return @Html.Raw(Json.Encode(ViewBag.DisCadTda)); }();
+        // var dataArray = data.Data;
+        var strTipo = $('#dwDis').val();
+        var strCad = $('#dwcad').val();
+
+
+        var listar = [];
+
+        if (strTipo != null && strCad != null) {
+
+            if (strTipo == "-1" || strCad=="-1") {
+                var lista_filter = (strTipo == "-1") ? dataArray.filter(obj => obj.cod_distri != strTipo) : dataArray.filter(obj => obj.cod_distri === strTipo || obj.cod_distri == '0');
+                $.each(lista_filter, function (index, item) {
+
+                    listar.push(item);
+                });
+            } else {
+
+                var lista_filter = dataArray.filter(obj => obj.cod_distri == '0');
+                $.each(lista_filter, function (index, item) {
+
+                    listar.push(item);
+                });
+
+                $.each(strCad, function (index3, item3) {
+
+                    $.each(strTipo, function (index2, item2) {
+
+                        var lista_filter = dataArray.filter(obj => obj.cod_distri === item2 && obj.cod_cadena===item3);
+                        $.each(lista_filter, function (index, item) {
+
+                            listar.push(item);
+                        });
+
+                    });
+                });
+            }
+        }
+
+
+        var group_tienda = Enumerable.from(listar)
+        .groupBy(
+        null,
+        null,
+        "{ cod_entid: $.cod_entid, des_entid: $.des_entid}",
+        "'' + $.cod_entid + '-' + $.des_entid"
+        ).toArray();
+
+
+        llenarComboTda("divtda", "dwtda", group_tienda, '0', '', "", '1');
+    }
+
+    function llenarComboTda(DivId, IdControl, Data, codDefecto, desDefecto, onchangeFuncion, tipo) {
+
+        $('#' + IdControl).find('option').remove();
+
+
+
+        var str = (tipo == '1') ? '<select class="selectpicker" multiple = "multiple"  data-live-search="true" onchangeFuncion data-width="100%" id="' + IdControl + '" name="' + IdControl + '" data-actions-box="true"  data-selected-text-format="count > 2" >' : '<select class="selectpicker"  data-live-search="true" onchangeFuncion data-width="100%" id="' + IdControl + '" name="' + IdControl + '"  data-actions-box="true"  data-selected-text-format="count > 2" > ';
+        var ItemNormal = '<option value="codItem">desItem</option>';
+        var colectItemNormal = '';
+
+        //if (codDefecto != '') { str += '<option value="' + codDefecto + '" selected="selected">------' + desDefecto + '------</option>'; }
+
+        if (onchangeFuncion != '') { onchangeFuncion = 'onchange = "' + onchangeFuncion + '()"' }
+        str = str.replace("onchangeFuncion", onchangeFuncion);
+
+        $.each(Data, function (index, item) {
+
+            colectItemNormal = colectItemNormal + ItemNormal
+            var strSelected = '"';
+
+            if (item.cod_entid == codDefecto) {
+                strSelected = '" selected="selected" '
+
+            }
+            strSelected = '" selected="selected" '; // seleccionar todos al cargar
+            colectItemNormal = colectItemNormal.replace("codItem", item.cod_entid + strSelected);
+            colectItemNormal = colectItemNormal.replace("desItem", item.des_entid);
+
+        });
+
+        str += colectItemNormal
+        str += '</select>'
+
+        document.getElementById(DivId).innerHTML = str
+
+        $('.selectpicker').selectpicker({
+            liveSearch: true,
+            showSubtext: true
+        });
+
+    }
+
+    function llenarComboCad(DivId, IdControl, Data, codDefecto, desDefecto, onchangeFuncion, tipo) {
+
+        $('#' + IdControl).find('option').remove();
+
+
+
+        var str = (tipo == '1') ? '<select class="selectpicker" multiple = "multiple"  data-live-search="true" onchangeFuncion data-width="100%" id="' + IdControl + '" name="' + IdControl + '" data-actions-box="true"  data-selected-text-format="count > 2" >' : '<select class="selectpicker"  data-live-search="true" onchangeFuncion data-width="100%" id="' + IdControl + '" name="' + IdControl + '"  data-actions-box="true"  data-selected-text-format="count > 2" > ';
+        var ItemNormal = '<option value="codItem">desItem</option>';
+        var colectItemNormal = '';
+
+        //if (codDefecto != '') { str += '<option value="' + codDefecto + '" selected="selected">------' + desDefecto + '------</option>'; }
+
+        if (onchangeFuncion != '') { onchangeFuncion = 'onchange = "' + onchangeFuncion + '()"' }
+        str = str.replace("onchangeFuncion", onchangeFuncion);
+
+        $.each(Data, function (index, item) {
+
+            colectItemNormal = colectItemNormal + ItemNormal
+            var strSelected = '"';
+
+            if (item.cod_entid == codDefecto) {
+                strSelected = '" selected="selected" '
+
+            }
+            strSelected = '" selected="selected" '; // seleccionar todos al cargar
+            colectItemNormal = colectItemNormal.replace("codItem", item.cod_cadena + strSelected);
+            colectItemNormal = colectItemNormal.replace("desItem", item.des_cadena);
+
+        });
+
+        str += colectItemNormal
+        str += '</select>'
+
+        document.getElementById(DivId).innerHTML = str
+
+        $('.selectpicker').selectpicker({
+            liveSearch: true,
+            showSubtext: true
+        });
+
+    }
+        function MostrarReporte(e) {
+
+            var bValidacion = true;
+            var coddis = '';//($("#dwDis option:not(:selected)").length == 0 && $("#dwDis > option").length > 1  ? "-1" : $('#dwDis').val()); // $('#dwDis').val();
+            var cod_tda = $('#dwtda').val();//($("#dwtda option:not(:selected)").length == 0 && $("#dwtda > option").length > 1 ? "0" : $('#dwtda').val()); // $('#dwtda').val();
+
+            
+            var tipo_cat = $('#dwTipo').val();
+            var cod_linea = ($("#dwGrupo option:not(:selected)").length == 0 && $("#dwGrupo > option").length > 1  ? "0" : $('#dwGrupo').val());// $('#dwGrupo').val(); 
+            var cod_categ = ($("#dwCate option:not(:selected)").length == 0 && $("#dwCate > option").length  > 1 ? "0" : $('#dwCate').val());// $('#dwCate').val();
+            var strTipo = $('#dwTipo').val();         
+
+            var calidad = ($("#dwCalidad option:not(:selected)").length == 0 && $("#dwCalidad > option").length > 1 ? "-1" : $('#dwCalidad').val()); // $('#dwCalidad').val();
+            var tipoObs =  $('#dwTipoObs').val();
+
+            var rangoObs = $('#dwRango').val();
+            var precio1 = $('#txtprcIni').val();
+            var precio2 = $('#txtprcFin').val();
+            var resumen = 0;
+            if ($('#resumen').is(':checked')){
+                resumen = 1;
+            }
+
+
+            rangoObs=rangoObs.replace("\n","");
+
+            coddis = coddis == '0'  ||coddis == '' ? '-1'  : coddis;
+            cod_tda = cod_tda == '0' ||cod_tda == ''  ? '-1'  : cod_tda;
+            cod_linea = cod_linea == '0' ||cod_linea == '' ? '-1'  : cod_linea;
+            cod_categ = cod_categ == '0' ||cod_categ == '' ? '-1'  : cod_categ;
+
+            tipo_cat = tipo_cat == '01'  ? 'S'  : tipo_cat;
+            tipo_cat = tipo_cat == '02'  ? 'R'  : tipo_cat;
+        
+            if( precio1 == '' || precio1 == null|| precio2 == '' || precio2 == null){bValidacion=false }
+            if(parseFloat(precio1) > parseFloat(precio2)){bValidacion=false }        
+           //bValidacion=false;
+            //tda = tda.toString();
+            if(coddis != '-1'){ coddis = coddis.toString();}
+            if(calidad != '-1'){ calidad = calidad.toString();}
+            if(cod_tda != '-1'){ cod_tda = cod_tda.toString();}
+             
+          
+            var TeamDetailPostBackURL = "@Url.Action("ShowGenericReportObsolescenciaInNewWin", "Reporte")";
+            if (bValidacion) {
+                waitingDialog.show('Espere un momento por favor');
+                $.ajax({
+                    url: TeamDetailPostBackURL,// '../ReporteCrystal/ShowGenericReportInNewWin',
+                    dataType: 'json',
+                    type: 'POST',                  
+                    data: { /*coddis:coddis,*/ cod_tda: cod_tda, tipo_cat:tipo_cat,cod_linea:cod_linea,cod_categ:cod_categ,calidad:calidad,precio1:precio1,precio2:precio2,tipoObs:tipoObs,rangoObs:rangoObs, resumen:resumen},
+                    //cache: false,
+                    //async: false,
+                    //dataType: "html",
+                    success: function (data) {
+                        //alert('ok');
+                        if (data.estado == "1") {
+                            $('#load').show();
+                            $("#load").attr("src", "../AspNetForms/ReporteObs.aspx");
+                        }
+                        else {
+                            $('#load').hide();
+                            waitingDialog.hide();
+                            toastr.error('Hubo un error en el reporte', "Alerta");
+
+                        }
+                        //document.getElementById("ifrReporte").innerHTML = data;
+                        //waitingDialog.hide();
+                        return false;
+                    },
+                    error: function (request, status, error) {
+                        waitingDialog.hide();
+                    }
+                }).done(function () {
+
+                });
+            } else {
+
+                if( precio1 == '' || precio1 == null|| precio2 == '' || precio2 == null){ toastr.error('Precio Ini y precio Fin son obligatorio', "Error"); }
+                if(parseFloat(precio1) > parseFloat(precio2)){ toastr.error('Precio Ini no debe ser mayor al precio Fin.', "Error"); }
+            }
+        }
+
+    function validarRangoPrecio() {
+      
+        if ($('#idRango').is(':checked')) {
+            $("#idRango").val('1');
+            $("#divprcFin").show();          
+            $("#divprcIni").show();  
+            $('#txtprcIni').val(0);
+            $('#txtprcFin').val(0);
+
+        } else {           
+            $("#idRango").val('0');
+            $("#divprcFin").hide();          
+            $("#divprcIni").hide();  
+            $('#txtprcIni').val(-1);
+            $('#txtprcFin').val(-1);
+         
+        }
+    }
+
+    
+    function ListarGrupo() {
+
+
+        var data = function () { return @Html.Raw(Json.Encode(ViewBag.ClGrupo)); }();
+
+        var dataArray = data.Data;
+        var strTipo = $('#dwTipo').val();
+        var listar = [];
+
+        if (strTipo != null) {
+            var lista_filter = dataArray.filter(obj => obj.cbo_filter_2 === strTipo);
+            $.each(lista_filter, function (index, item) {
+
+                listar.push(item);
+            });
+        }
+       
+        llenarComboAlt("divgrupo", "dwGrupo", listar, '0', '', "ListarCategoria");
+ 
+        ListarCategoria();
+   
+
+    }
+
+    function ListarCategoria() {
+        
+        var data = function () { return @Html.Raw(Json.Encode(ViewBag.ClCategoria)); }();
+        var dataArray = data.Data;
+        var strgrupo = $('#dwGrupo').val();
+          
+        var strTipo = $('#dwTipo').val();
+        var listar = [];
+        var lista_default = dataArray.filter(obj => obj.cbo_filter === '');
+
+
+        $.each(lista_default, function (index, item) {
+            listar.push(item);
+        });
+
+        if (strgrupo != null) {
+
+            if (strgrupo != '0') {
+                var lista_filteAnt = dataArray.filter(obj => obj.cbo_filter_2 === strTipo);
+
+                $.each(strgrupo, function (index, item) {
+
+                    var lista_filter = lista_filteAnt.filter(obj => obj.cbo_filter === item);
+                 
+                    $.each(lista_filter, function (index2, item2) {
+
+                        listar.push(item2);                       
+
+                    });
+                });
+            }        
+
+            if (strgrupo == '0') {
+                var lista_filteAnt = dataArray.filter(obj => obj.cbo_filter_2 === strTipo);
+                var lista_filter = lista_filteAnt;
+
+                $.each(lista_filter, function (index, item) {
+
+                    listar.push(item);
+                });
+            }
+        }
+        llenarComboAlt("divcateg", "dwCate", listar, '0', '', "");
+     
+
+    }
+
+</script>

@@ -1,0 +1,2602 @@
+﻿@using Newtonsoft.Json
+@using CapaEntidad.BataClub
+@using CapaEntidad.Util
+@{
+    ViewBag.Title = "BataClub - Dashboard";
+    //ViewBag.chartDS = JsonConvert.SerializeObject(ViewBag.chartDS, Newtonsoft.Json.Formatting.None, new JsonSerializerSettings { NullValueHandling = NullValueHandling.Ignore });
+    //ViewBag.chartDonut = JsonConvert.SerializeObject(ViewBag.chartDonut, Newtonsoft.Json.Formatting.None, new JsonSerializerSettings { NullValueHandling = NullValueHandling.Ignore });
+    ViewBag.chartMesParesSoles = JsonConvert.SerializeObject(ViewBag.chartMesParesSoles, Newtonsoft.Json.Formatting.None, new JsonSerializerSettings { NullValueHandling = NullValueHandling.Ignore });
+    ViewBag.promsPS = JsonConvert.SerializeObject(ViewBag.promsPS, Newtonsoft.Json.Formatting.None, new JsonSerializerSettings { NullValueHandling = NullValueHandling.Ignore });
+    //ViewBag.totalesGeneros = JsonConvert.SerializeObject(ViewBag.totalesGeneros, Newtonsoft.Json.Formatting.None, new JsonSerializerSettings { NullValueHandling = NullValueHandling.Ignore });
+    ViewBag.BarChartTranReg = JsonConvert.SerializeObject(ViewBag.BarChartTranReg, Newtonsoft.Json.Formatting.None, new JsonSerializerSettings { NullValueHandling = NullValueHandling.Ignore });
+    //ViewBag.DetallesTiendaSuperv = JsonConvert.SerializeObject(ViewBag.DetallesTiendaSuperv, Newtonsoft.Json.Formatting.None, new JsonSerializerSettings { NullValueHandling = NullValueHandling.Ignore });
+
+    ViewBag.BarChartCompras = JsonConvert.SerializeObject(ViewBag.BarChartCompras, Newtonsoft.Json.Formatting.None, new JsonSerializerSettings { NullValueHandling = NullValueHandling.Ignore });
+    ViewBag.DetallesTipoCompra = JsonConvert.SerializeObject(ViewBag.DetallesTipoCompra, Newtonsoft.Json.Formatting.None, new JsonSerializerSettings { NullValueHandling = NullValueHandling.Ignore });
+
+    ViewBag.chartComCL = JsonConvert.SerializeObject(ViewBag.chartComCL, Newtonsoft.Json.Formatting.None, new JsonSerializerSettings { NullValueHandling = NullValueHandling.Ignore });
+
+    ViewBag.chartIncompletos = JsonConvert.SerializeObject(ViewBag.chartIncompletos, Newtonsoft.Json.Formatting.None, new JsonSerializerSettings { NullValueHandling = NullValueHandling.Ignore });
+}
+<style>
+    .chart {
+        position: relative;
+        overflow: hidden;
+        width: 100%;
+    }
+
+        .chart svg, .chart canvas {
+            width: 100% !important;
+        }
+
+    .col-xs-5ths,
+    .col-sm-5ths,
+    .col-md-5ths,
+    .col-lg-5ths {
+        position: relative;
+        min-height: 1px;
+        padding-right: 15px;
+        padding-left: 15px;
+    }
+
+    .col-xs-5ths {
+        width: 20%;
+        float: left;
+    }
+
+    @@media (min-width: 768px) {
+        .col-sm-5ths {
+            width: 20%;
+            float: left;
+        }
+    }
+
+    @@media (min-width: 992px) {
+        .col-md-5ths {
+            width: 20%;
+            float: left;
+        }
+    }
+
+    @@media (min-width: 1200px) {
+        .col-lg-5ths {
+            width: 20%;
+            float: left;
+        }
+    }
+
+    .my-custom-scrollbar {
+        position: relative;
+        height: 200px;
+        overflow: auto;
+    }
+
+    .table-wrapper-scroll-y {
+        display: block;
+    }
+
+    .bg-soles {
+        background-color: #d7f04d !important;
+        color: #464646 !important;
+    }
+
+    .bg-pares {
+        background-color: #a06457 !important;
+        color: #fff !important;
+    }
+
+    .bg-registros {
+        background-color: #e6e6e6 !important;
+        color: #444 !important;
+    }
+
+    .bg-transac {
+        background-color: #33b87b !important;
+        color: #fff !important;
+    }
+
+    .bg-bataclub {
+        background-color: #E66565 !important;
+        color: #fff !important;
+    }
+
+    .bg-consumido {
+        background-color: #f39c12 !important;
+        color: #fff !important;
+    }
+
+    .table td.text {
+        max-width: 177px;
+    }
+
+        .table td.text span {
+        }
+
+    .modal-body {
+        max-height: calc(100vh - 212px);
+        overflow-y: auto;
+    }
+    .w-select-semana{
+        width:175px !important;
+    }
+</style>
+<link href="@Url.Content("~/Content/bootstrap-select.min.css")" rel="stylesheet" type="text/css" />
+<link href="~/Content/magic-check.css" rel="stylesheet" />
+<section class="content">
+    <!-- Info boxes -->
+    <div class="row">
+        <div class="col-sm-4 col-sm-6 col-xs-12">
+            <div class="info-box">
+                <span class="info-box-icon bg-light-blue"><i class="glyphicon glyphicon-th-list"></i></span>
+                <div class="info-box-content">
+                    <span class="info-box-text">REGISTROS</span>
+                    <span class="info-box-number" id="total_registros">@ViewBag.general.REGISTROS.ToString("N0")</span>
+                </div>
+                <!-- /.info-box-content -->
+            </div>
+            <!-- /.info-box -->
+        </div>
+        <div class="col-sm-4 col-sm-6 col-xs-12">
+            <div class="info-box">
+                <span class="info-box-icon bg-red"><i class="fa fa-user"></i></span>
+                <div class="info-box-content">
+                    <span class="info-box-text">MIEMBROS</span>
+                    <span class="info-box-number" id="total_registros">@ViewBag.general.MIEMBROS.ToString("N0")</span>
+                </div>
+                <!-- /.info-box-content -->
+            </div>
+            <!-- /.info-box -->
+        </div>
+        <!-- /.col -->
+        <div class="col-sm-4 col-sm-6 col-xs-12">
+            <div class="info-box">
+                <span class="info-box-icon bg-purple-gradient"><i class="ion ion-ios-people-outline"></i></span>
+                <div class="info-box-content">
+                    <span class="info-box-text">CLIENTES</span>
+                    <span class="info-box-number" id="total_miembros">@((ViewBag.general.MIEMBROS + ViewBag.general.REGISTROS).ToString("N0"))</span>
+                    @*<p>Registros:&nbsp;&nbsp;<small>@ViewBag.general.REGISTROS.ToString("N0")</small></p>
+                        <p>Miembros:&nbsp;&nbsp;<small>@ViewBag.general.MIEMBROS.ToString("N0")</small></p>*@
+                </div>
+                <!-- /.info-box-content -->
+            </div>
+            <!-- /.info-box -->
+        </div>
+
+        <!-- /.col -->
+        <!-- fix for small devices only -->
+        <div class="clearfix visible-sm-block"></div>
+        @*<div class="col-sm-4 col-sm-6 col-xs-12">
+                <div class="info-box">
+                    <span class="info-box-icon bg-yellow"><i class="fa fa-ticket"></i></span>
+                    <div class="info-box-content">
+                        <span class="info-box-text">TRANSACCIONES</span>
+                        <span class="info-box-text">CUPONES</span>
+                        <span class="info-box-number" id="total_transacciones">@ViewBag.general.TRANSAC_CUPON.ToString("N0")</span>
+                    </div>
+                    <!-- /.info-box-content -->
+                </div>
+                <!-- /.info-box -->
+            </div>*@
+        @*<div class="col-sm-4 col-sm-6 col-xs-12">
+                <div class="info-box">
+                    <span class="info-box-icon bg-aqua"><i class="glyphicon glyphicon glyphicon-tags" ></i></span>
+                    <div class="info-box-content">
+                        <span class="info-box-text">PARES</span>
+                        <span class="info-box-number" id="total_miembros">@ViewBag.general.PARES.ToString("N0")</span>
+                    </div>
+                    <!-- /.info-box-content -->
+                </div>
+                <!-- /.info-box -->
+            </div>*@
+        @*<div class="col-sm-4 col-sm-6 col-xs-12">
+                <div class="info-box">
+                    <span class="info-box-icon bg-green"><i class="fa fa-money"></i></span>
+                    <div class="info-box-content">
+                        <span class="info-box-text">SOLES</span>
+                        <span class="info-box-number" id="total_miembros">@ViewBag.general.SOLES.ToString("N0")</span>
+                    </div>
+                    <!-- /.info-box-content -->
+                </div>
+                <!-- /.info-box -->
+            </div>*@
+    </div>
+    <!-- /.row -->
+    <div class="row">
+        <div class="col-md-4">
+            <div class="box">
+                <div class="box-header with-border">
+                    <i class="fa fa-bar-chart-o"></i>
+                    <h3 class="box-title">Ticket Promedio</h3>
+                </div>
+                <!-- /.box-header -->
+                <div class="box-body">
+                    <div class="row row-no-gutters">
+                        <div class="col-sm-5">
+                            <div class="form-inline">
+                                <div class="form-group date">                                   
+                                    <div class="input-group input-group-sm">
+                                        <div class="input-group-addon">
+                                            <i class="fa fa-calendar"></i>
+                                        </div>
+                                        <input type="text" class="form-control pull-right" id="fechaIniTP">
+                                    </div>
+                                </div>&nbsp;&nbsp;&nbsp;
+                            </div>
+                        </div>
+                        <div class="col-sm-5">
+                            <div class="form-inline">
+                                <div class="form-group date">                                    
+                                    <div class="input-group input-group-sm">
+                                        <div class="input-group-addon">
+                                            <i class="fa fa-calendar"></i>
+                                        </div>
+                                        <input type="text" class="form-control pull-right" id="fechaFinTP">
+                                    </div>
+                                </div>&nbsp;&nbsp;&nbsp;
+                            </div>
+                        </div>
+                        <div class="col-sm-1">
+                            <button type="button" class="btn btn-primary btn-sm" title="Mostrar" id="btnMostrarChartTP"><i class="fa fa-search"></i></button>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-12">
+                            <p class="text-center">
+                                <strong id="tituloBarCharTP"></strong>
+                            </p>
+                            <div class="chart">
+                                <canvas id="barChartTP" style="height: 310px;"></canvas>
+                            </div>
+                            <!-- /.chart-responsive -->
+                        </div>
+                    </div>
+                    <!-- /.row -->
+                </div>
+                <div id="TP-load" class="overlay hidden">
+                    <i class="fa fa-refresh fa-spin"></i>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-8">
+            <div class="box">
+                <div class="box-header with-border">
+                    <i class="fa fa-pie-chart"></i>
+                    <h3 class="box-title">Porcentaje de cumplimiento de venta Bata</h3>
+                </div>
+                <div class="box-body"> 
+                    <div class="row row-no-gutters">
+                        <div class="col-sm-12">
+                            <div class="form-inline">
+                                <label for="semanaCVB">Semana: &nbsp;</label>
+                                <div class="form-group form-group-sm">                                    
+                                    @Html.DropDownList("semanaCVB", new SelectList(ViewBag.Semana, "cbo_codigo", "cbo_descripcion", ((List<Ent_Combo>)ViewBag.Semana).Select(s=> s.cbo_codigo).FirstOrDefault() ), new { @class = "selectpicker form-control form-control-sm w-select-semana", @data_live_search = "true", @id = "semanaCVB", @name = "dwSemana" , @multiple = "multiple" })
+                                </div>&nbsp;&nbsp;&nbsp;
+                                <button type="button" class="btn btn-primary btn-sm" title="Mostrar" id="btnMostrarChartCVB"><i class="fa fa-search"></i></button>
+                                <a href="@Url.Action("GetExcelCVB","BataClub")" class="btn btn-success btn-sm pull-right"><i class="glyphicon glyphicon-export"></i>&nbsp;&nbsp;Exportar</a>
+                            </div>
+                        </div>                      
+                    </div>    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <p><span id="tituloBarChartCVB"></span></p>
+                            <div class="chart">
+                                <canvas id="chartCVB" style="height: 310px;"></canvas>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="table-wrapper-scroll-y my-custom-scrollbar" style="height:320px">
+                                <table id="tiendasDetalleCVB" class="table table-hover table-bordered">                                   
+                                </table>
+                            </div>
+                            <p id="totalesTiendasCVB" class="pull-right" style="padding-right:15px; padding-top:7px"></p>
+                        </div>
+                    </div>
+                </div>
+                <div id="CVB-load" class="overlay hidden">
+                    <i class="fa fa-refresh fa-spin"></i>
+                </div>
+                <!-- /.box-footer -->
+            </div>
+            <!-- /.box -->
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-8">
+
+            <div class="box">
+                <div class="box-header with-border">
+                    <i class="fa fa-bar-chart-o"></i>
+                    <h3 class="box-title">Venta por categoria (Comparativo)</h3>
+                    <div class="box-tools pull-right" style="top: 3px;">
+                        @*@Html.DropDownList("anioPS", new SelectList(ViewBag.anios, "cbo_codigo", "cbo_descripcion", "0"), new { @class = "form-control form-control-sm selectpicker anio", @id = "anioPS", @name = "anioPS", @data_informe = 4 })*@
+
+                    </div>
+                </div>
+                <!-- /.box-header -->
+                <div class="box-body">
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="form-inline">
+                                <div class="form-group date">
+                                    <label>Inicio: </label>&nbsp;&nbsp;
+                                    <div class="input-group input-group-sm">
+                                        <div class="input-group-addon">
+                                            <i class="fa fa-calendar"></i>
+                                        </div>
+                                        <input type="text" class="form-control pull-right" id="fechaIniVxC">
+                                    </div>
+                                </div>&nbsp;&nbsp;&nbsp;
+                                <div class="form-group date">
+                                    <label>Fin: </label>&nbsp;&nbsp;
+                                    <div class="input-group input-group-sm">
+                                        <div class="input-group-addon">
+                                            <i class="fa fa-calendar"></i>
+                                        </div>
+                                        <input type="text" class="form-control pull-right" id="fechaFinVxC">
+                                    </div>
+                                </div>&nbsp;&nbsp;&nbsp;
+                                <button type="button" class="btn btn-primary btn-sm" title="Mostrar" id="btnMostrarCharBarVxC"><i class="fa fa-search"></i></button>
+                                @*<a href="@Url.Action("RegTraConTdaExcel","BataClub")" class="btn btn-success btn-sm pull-right"><i class="glyphicon glyphicon-export"></i>&nbsp;&nbsp;Exportar</a>*@
+                            </div>
+
+                        </div>
+                    </div>
+                    <br />
+                    <div class="row">
+                        <div class="col-md-12">
+                            <p id="tituloBarCharVxC"></p>
+                            <div class="chart">
+                                <canvas id="barChartVxC" style="height: 290px;"></canvas>
+                            </div>
+                            <!-- /.chart-responsive -->
+                        </div>
+                    </div>
+                    <!-- /.row -->
+                </div>
+                <!-- ./box-body -->
+                <div id="VxC-load" class="overlay hidden">
+                    <i class="fa fa-refresh fa-spin"></i>
+                </div>
+            </div>
+            <!-- /.box -->
+        </div>
+    </div>
+
+
+    <div class="row">
+        <div class="col-md-8">
+            <div class="box">
+                <div class="box-header with-border">
+                    <i class="fa fa-bar-chart-o"></i>
+                    <h3 class="box-title">Clientes  x  Mes</h3>
+
+                    <div class="box-tools pull-right" style="top: 3px;">
+                        @Html.DropDownList("anioIm", new SelectList(ViewBag.anios, "cbo_codigo", "cbo_descripcion", "0"), new { @class = "form-control form-control-sm selectpicker", @id = "anioIm", @name = "anioIm", @data_informe = 2 })
+                    </div>
+                </div>
+                <!-- /.box-header -->
+                <div class="box-body">
+                    <div class="row">
+                        <div class="col-md-12">
+                            <p class="text-center">
+                                <strong id="tituloBarChar"></strong>
+                            </p>
+                            <div class="chart">
+                                <canvas id="barChart" style="height: 310px;"></canvas>
+                            </div>
+                            <!-- /.chart-responsive -->
+                        </div>
+                    </div>
+                    <!-- /.row -->
+                </div>
+                <!-- ./box-body -->
+                <div class="box-footer">
+                    <div class="row">
+                        <div class="col-sm-4 col-xs-6">
+                            <div class="description-block border-right">
+                                <span class="description-percentage text-fuchsia"><i class="fa fa-female"></i></span>
+                                <h5 class="description-header" id="totalFemenino"></h5>
+                                <span class="description-text">FEMENINO</span>
+                            </div>
+                            <!-- /.description-block -->
+                        </div>
+                        <!-- /.col -->
+                        <div class="col-sm-4 col-xs-6">
+                            <div class="description-block border-right">
+                                <span class="description-percentage text-blue"><i class="fa fa-male"></i></span>
+                                <h5 class="description-header" id="totalMasculino"></h5>
+                                <span class="description-text">MASCULINO</span>
+                            </div>
+                            <!-- /.description-block -->
+                        </div>
+                        <!-- /.col -->
+                        <div class="col-sm-4 col-xs-6">
+                            <div class="description-block">
+                                <span class="description-percentage text-red"><i class="fa fa-ban"></i></span>
+                                <h5 class="description-header" id="totalNulo"></h5>
+                                <span class="description-text">SIN DATOS</span>
+                            </div>
+                            <!-- /.description-block -->
+                        </div>
+                    </div>
+                    <!-- /.row -->
+                </div>
+                <div id="CxM-load" class="overlay hidden">
+                    <i class="fa fa-refresh fa-spin"></i>
+                </div>
+                <!-- /.box-footer -->
+            </div>
+            <!-- /.box -->
+        </div>
+        <!-- /.col -->
+        <div class="col-md-4">
+            <div class="box box-default">
+                <div class="box-header with-border">
+                    <i class="fa fa-pie-chart"></i>
+                    <h3 class="box-title">Canales x Fecha</h3>
+                    <div class="box-tools pull-right" style="top: 3px;">
+                        <button type="button" class="btn btn-primary btn-sm" title="Mostrar" id="btnMostrarCharBarcanal"><i class="fa fa-search"></i></button>
+                        <button type="button" class="btn btn-success btn-sm" title="Exportar a Excel" id="btnMostrarCharBarcanal_excel"><i class="glyphicon glyphicon-export"></i>&nbsp;&nbsp;Exportar</button>
+                    </div>
+                    @*<div class="box-tools pull-right" style="top: 3px;">
+                            @Html.DropDownList("anioC", new SelectList(ViewBag.anios, "cbo_codigo", "cbo_descripcion", "0"), new { @class = "form-control form-control-sm selectpicker anio", @id = "anioC", @name = "anioC", @data_informe = 3 })
+                        </div>*@
+                </div>
+                <!-- /.box-header -->
+                <div class="box-body">
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="form-inline">
+                                <div class="col-md-6">
+                                    <div class="form-group date">
+                                        @*<label>Inicio: </label>&nbsp;&nbsp;*@
+                                        <div class="input-group input-group-sm">
+                                            <div class="input-group-addon">
+                                                <i class="fa fa-calendar"></i>
+                                            </div>
+                                            <input type="text" class="form-control pull-right" id="fechaIni_canal">
+                                        </div>
+
+                                    </div>&nbsp;&nbsp;&nbsp;
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group date">
+                                        @*<label>Fin: </label>&nbsp;&nbsp;*@
+                                        <div class="input-group input-group-sm">
+                                            <div class="input-group-addon">
+                                                <i class="fa fa-calendar"></i>
+                                            </div>
+                                            <input type="text" class="form-control pull-right" id="fechaFin_canal">
+                                        </div>
+                                    </div>
+                                </div>
+                                @*<a href="@Url.Action("RegTraConTdaExcel","BataClub")" class="btn btn-primary btn-sm"><i class="glyphicon glyphicon-export"></i>&nbsp;&nbsp;Exportar</a>*@
+                            </div>
+
+
+                        </div>
+                    </div>
+                    @*<div class="row">
+                            <div class="col-md-12">
+                                <button type="button" class="btn btn-primary btn-sm" title="Mostrar" id="btnMostrarCharBarcanal"><i class="fa fa-search"></i></button>
+                                <button type="button" class="btn btn-primary btn-sm" title="Exportar a Excel" id="btnMostrarCharBarcanal_excel"><i class="glyphicon glyphicon-export">Exportar</i></button>
+                            </div>
+                        </div>*@
+                    <div class="row">
+                        <div class="col-md-12">
+                            <p class="text-center text-bold" id="tituloCanalesChar">
+                            </p>
+                            <div class="chart-responsive">
+                                <canvas id="canalChart" height="300"></canvas>
+                            </div>
+                            <!-- ./chart-responsive -->
+                        </div>
+                        <!-- /.col -->
+                    </div>
+                    <!-- /.row -->
+                </div>
+                <div id="CxF-load" class="overlay hidden">
+                    <i class="fa fa-refresh fa-spin"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-12">
+            <div class="box">
+                <div class="box-header with-border">
+                    <i class="fa fa-bar-chart-o"></i>
+                    <h3 class="box-title">Pares/Soles  x  Mes</h3>
+                    <div class="box-tools pull-right" style="top: 3px;">
+
+                        @Html.DropDownList("dw_can_venta_soles", new SelectList(ViewBag.canal_venta, "can_venta_id", "can_venta_des", "0"), new { @class = "selectpicker", @data_live_search = "true", multiple = "multiple", @id = "dw_can_venta_soles", @name = "dw_can_venta_soles", @data_informe = 4, @data_actions_box = "true", @data_selected_text_format = "count > 2" })
+                    </div>
+
+                    <div  class="box-tools pull-right"  style="top: 3px;visibility:hidden;">
+
+                        @Html.DropDownList("anioPS", new SelectList(ViewBag.anios, "cbo_codigo", "cbo_descripcion", "0"), new { @class = "form-control form-control-sm selectpicker anio", @id = "anioPS", @name = "anioPS", @data_informe = 4 })
+                    </div>
+                </div>
+                <!-- /.box-header -->
+                <div class="box-body">
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="form-inline">
+                                <div class="form-group date">
+                                    <label>Inicio: </label>&nbsp;&nbsp;
+                                    <div class="input-group input-group-sm">
+                                        <div class="input-group-addon">
+                                            <i class="fa fa-calendar"></i>
+                                        </div>
+                                        <input type="text" class="form-control pull-right" id="fechaIni_PS">
+                                    </div>
+                                </div>&nbsp;&nbsp;&nbsp;
+                                <div class="form-group date">
+                                    <label>Fin: </label>&nbsp;&nbsp;
+                                    <div class="input-group input-group-sm">
+                                        <div class="input-group-addon">
+                                            <i class="fa fa-calendar"></i>
+                                        </div>
+                                        <input type="text" class="form-control pull-right" id="fechaFin_PS">
+                                    </div>
+                                </div>&nbsp;&nbsp;&nbsp;
+                                <button type="button" class="btn btn-primary btn-sm" title="Mostrar" id="btnMostrarChartBarPS"><i class="fa fa-search"></i></button>
+                                @*<a href="@Url.Action("RegTraConTdaExcel","BataClub")" class="btn btn-success btn-sm pull-right"><i class="glyphicon glyphicon-export"></i>&nbsp;&nbsp;Exportar</a>*@
+                            </div>
+
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-8">
+                            <p class="text-center" id="tituloBarCharPS">
+                            </p>
+                            <div class="chart">
+                                <canvas id="barChartPS" style="height: 300px;"></canvas>
+                            </div>
+                            <!-- /.chart-responsive -->
+                        </div>
+                        <div class="col-md-4">
+                            <div class="row" style="margin-bottom:10px">
+                                <div class="col-sm-12">
+                                    <a href="@Url.Action("ParSolMesExcel","BataClub")" class="btn btn-success btn-sm pull-right"><i class="glyphicon glyphicon-export"></i>&nbsp;&nbsp;Exportar</a>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-sm-12">
+                                    <div class="table-wrapper-scroll-y my-custom-scrollbar" style="height:270px">
+                                        <table id="promocionesDetalle" class="table table-hover"></table>
+                                    </div>
+                                </div>
+                            </div>
+                            <p id="totalesPromociones" class="pull-right" style="padding-right:15px; padding-top:7px"></p>
+                        </div>
+                    </div>
+                    <!-- /.row -->
+                </div>
+                <!-- ./box-body -->
+            </div>
+            <!-- /.box -->
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-12">
+            <div class="box">
+                <div class="box-header with-border">
+                    <i class="fa fa-bar-chart-o"></i>
+                    <h3 class="box-title">Registros/Transacciones/Consumos  x  Distrito/Tienda</h3>
+                    <div class="box-tools pull-right" style="top: 3px;">
+                        @*@Html.DropDownList("anioPS", new SelectList(ViewBag.anios, "cbo_codigo", "cbo_descripcion", "0"), new { @class = "form-control form-control-sm selectpicker anio", @id = "anioPS", @name = "anioPS", @data_informe = 4 })*@
+                    </div>
+                </div>
+                <!-- /.box-header -->
+                <div class="box-body">
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="form-inline">
+                                <div class="form-group date">
+                                    <label>Inicio: </label>&nbsp;&nbsp;
+                                    <div class="input-group input-group-sm">
+                                        <div class="input-group-addon">
+                                            <i class="fa fa-calendar"></i>
+                                        </div>
+                                        <input type="text" class="form-control pull-right" id="fechaIni">
+                                    </div>
+                                </div>&nbsp;&nbsp;&nbsp;
+                                <div class="form-group date">
+                                    <label>Fin: </label>&nbsp;&nbsp;
+                                    <div class="input-group input-group-sm">
+                                        <div class="input-group-addon">
+                                            <i class="fa fa-calendar"></i>
+                                        </div>
+                                        <input type="text" class="form-control pull-right" id="fechaFin">
+                                    </div>
+                                </div>&nbsp;&nbsp;&nbsp;
+                                <button type="button" class="btn btn-primary btn-sm" title="Mostrar" id="btnMostrarChartBarDist"><i class="fa fa-search"></i></button>
+                                <a href="@Url.Action("RegTraConTdaExcel","BataClub")" class="btn btn-success btn-sm pull-right"><i class="glyphicon glyphicon-export"></i>&nbsp;&nbsp;Exportar</a>
+                            </div>
+
+                        </div>
+                    </div>
+                    <br />
+                    <div class="row">
+                        <div class="col-md-8">
+                            <p class="text-center" id="tituloBarChartDist">
+                            </p>
+                            <div class="chart">
+                                <canvas id="barChartDist" style="height: 290px;"></canvas>
+                            </div>
+                            <!-- /.chart-responsive -->
+                        </div>
+                        <div class="col-md-4">
+                            <div class="table-wrapper-scroll-y my-custom-scrollbar" style="height:290px">
+                                <table id="tiendasDetalle" class="table table-hover table-bordered table-condensed"></table>
+                            </div>
+                            <p id="totalesTiendas" class="pull-right" style="padding-right:15px; padding-top:7px"></p>
+                        </div>
+                    </div>
+                    <!-- /.row -->
+                </div>
+                <!-- ./box-body -->
+                <div id="Dist-load" class="overlay hidden">
+                    <i class="fa fa-refresh fa-spin"></i>
+                </div>
+            </div>
+            <!-- /.box -->
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-12">
+            <div class="box">
+                <div class="box-header with-border">
+                    <i class="fa fa-bar-chart-o"></i>
+                    <h3 class="box-title">Compras Cupones y Regular</h3>
+
+                    <div class="box-tools pull-right" style="top: 3px;">
+                        @*@Html.DropDownList("anioPS", new SelectList(ViewBag.anios, "cbo_codigo", "cbo_descripcion", "0"), new { @class = "form-control form-control-sm selectpicker anio", @id = "anioPS", @name = "anioPS", @data_informe = 4 })*@
+
+                    </div>
+                </div>
+                <!-- /.box-header -->
+                <div class="box-body">
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="form-inline">
+                                <div class="form-group date">
+                                    <label>Inicio: </label>&nbsp;&nbsp;
+                                    <div class="input-group input-group-sm">
+                                        <div class="input-group-addon">
+                                            <i class="fa fa-calendar"></i>
+                                        </div>
+                                        <input type="text" class="form-control pull-right" id="fechaIni_com">
+                                    </div>
+                                </div>&nbsp;&nbsp;&nbsp;
+                                <div class="form-group date">
+                                    <label>Fin: </label>&nbsp;&nbsp;
+                                    <div class="input-group input-group-sm">
+                                        <div class="input-group-addon">
+                                            <i class="fa fa-calendar"></i>
+                                        </div>
+                                        <input type="text" class="form-control pull-right" id="fechaFin_com">
+                                    </div>
+                                </div>&nbsp;&nbsp;&nbsp;
+                                <button type="button" class="btn btn-primary btn-sm" title="Mostrar" id="btnMostrarCharBarCom"><i class="fa fa-search"></i></button>
+                                @*<a href="@Url.Action("RegTraConTdaExcel","BataClub")" class="btn btn-success btn-sm pull-right"><i class="glyphicon glyphicon-export"></i>&nbsp;&nbsp;Exportar</a>*@
+                            </div>
+
+                        </div>
+                    </div>
+                    <br />
+                    <div class="row">
+                        <div class="col-md-8">
+                            <p class="text-center" id="tituloBarCharCompra">
+                            </p>
+                            <div class="chart">
+                                <canvas id="barChart_com" style="height: 290px;"></canvas>
+                            </div>
+                            <!-- /.chart-responsive -->
+                        </div>
+                        <div class="col-md-4">
+                            <div class="table-wrapper-scroll-y my-custom-scrollbar" style="height:320px">
+                                <table id="ComprasDetalle" class="table table-hover"></table>
+                            </div>
+                            <p id="totalesCompras" class="pull-right" style="padding-right:15px; padding-top:7px"></p>
+                        </div>
+                    </div>
+                    <!-- /.row -->
+                </div>
+                <!-- ./box-body -->
+            </div>
+            <!-- /.box -->
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-7">
+            <div class="box">
+                <div class="box-header with-border">
+                    <i class="fa fa-pie-chart"></i>
+                    <h3 class="box-title">Compras Clientes  </h3>
+
+                    <div class="box-tools pull-right" style="top: 3px;">
+                        @*@Html.DropDownList("anioPS", new SelectList(ViewBag.anios, "cbo_codigo", "cbo_descripcion", "0"), new { @class = "form-control form-control-sm selectpicker anio", @id = "anioPS", @name = "anioPS", @data_informe = 4 })*@
+
+                    </div>
+                </div>
+                <!-- /.box-header -->
+                <div class="box-body">
+                    <div class="row">
+                        <div class="col-md-9">
+                            <div class="form-inline">
+                                <div class="form-group date">
+                                    <label>Inicio: </label>&nbsp;&nbsp;
+                                    <div class="input-group input-group-sm">
+                                        <div class="input-group-addon">
+                                            <i class="fa fa-calendar"></i>
+                                        </div>
+                                        <input type="text" class="form-control pull-right" id="fechaIni_com_cl">
+                                    </div>
+                                </div>&nbsp;&nbsp;&nbsp;
+                                <div class="form-group date">
+                                    <label>Fin: </label>&nbsp;&nbsp;
+                                    <div class="input-group input-group-sm">
+                                        <div class="input-group-addon">
+                                            <i class="fa fa-calendar"></i>
+                                        </div>
+                                        <input type="text" class="form-control pull-right" id="fechaFin_com_cl">
+                                    </div>
+                                </div>&nbsp;&nbsp;&nbsp;
+                                <button type="button" class="btn btn-primary btn-sm" title="Mostrar" id="btnMostrarCharBarCom_CL"><i class="fa fa-search"></i></button>
+                                &nbsp;&nbsp;
+                                <button type="button" class="btn btn-success btn-sm" title="Exportar a Excel" id="btnMostrarCharBarCom_CL_excel"><i class="glyphicon glyphicon-export">Exportar</i></button>
+                                @*<a href="@Url.Action("RegTraConTdaExcel","BataClub")" class="btn btn-success btn-sm pull-right"><i class="glyphicon glyphicon-export"></i>&nbsp;&nbsp;Exportar</a>*@
+                            </div>
+
+                        </div>
+                    </div>
+                    <br />
+                    <div class="row">
+                        <div class="col-md-2">
+
+                        </div>
+                        <div class="col-md-6">
+                            <p class="text-center" id="tituloBarCharCompra_CL">
+                            </p>
+                            <div class="chart-responsive">
+                                <canvas id="Chart_compras_CL" height="300"></canvas>
+                            </div>
+                            @*<div class="chart">
+                                    <canvas id="barChart_com" style="height: 290px;"></canvas>
+                                </div>*@
+                            <!-- /.chart-responsive -->
+                        </div>
+                        @*<div class="col-md-4">
+                                <div class="table-wrapper-scroll-y my-custom-scrollbar" style="height:320px">
+                                    <table id="ComprasDetalle" class="table table-hover"></table>
+                                </div>
+                                <p id="totalesCompras" class="pull-right" style="padding-right:15px; padding-top:7px"></p>
+                            </div>*@
+                    </div>
+                    <!-- /.row -->
+                </div>
+                <!-- ./box-body -->
+            </div>
+            <!-- /.box -->
+        </div>
+        <div class="col-md-5">
+            <div class="box box-default">
+                <div class="box-header with-border">
+                    <i class="fa fa-pie-chart"></i>
+                    <h3 class="box-title">Clientes Datos Incompletos</h3>
+                    @*<button type="button" class="btn btn-primary btn-sm" title="Mostrar" id="btnMostrarCharBarcanal"><i class="fa fa-search"></i></button>*@
+                    @*<button type="button" class="btn btn-success btn-sm" title="Exportar a Excel" id="btnMostrarCharBarcanal_excel"><i class="glyphicon glyphicon-export">Exportar</i></button>*@
+                </div>
+                <!-- /.box-header -->
+                <div class="box-body">
+                    <div class="row">
+                        <div class="col-md-8">
+                            <div class="form-group">
+                                <div>
+                                    <input class="magic-radio" type="radio" name="radio" id="rdb_fn" checked>
+                                    <label for="rdb_fn"> Fecha de Nacimiento</label>
+
+                                </div>
+                                @*<button type="button" class="btn btn-success btn-sm" title="Exportar a Excel" id="btnMostrarCharBarcanal_excel"><i class="glyphicon glyphicon-export">Exportar</i></button>*@
+                                <div>
+                                    <input class="magic-radio" type="radio" name="radio" id="rdb_gen">
+                                    <label for="rdb_gen">Genero</label>
+                                </div>
+                                <div>
+                                    <input class="magic-radio" type="radio" name="radio" id="rdb_ubi">
+                                    <label for="rdb_ubi">Ubicacion</label>
+                                </div>
+
+
+                            </div>
+
+                        </div>
+                        <div class="col-md-2">
+                            <button type="button" class="btn btn-success btn-sm" title="Exportar a Excel" id="btnDataIncom_excel"><i class="glyphicon glyphicon-export">Exportar</i></button>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-12">
+                            <p class="text-center text-bold" id="tituloCanalesChar">
+                            </p>
+                            <div class="chart-responsive">
+                                <canvas id="incompletoChart" height="217"></canvas>
+                            </div>
+                            <!-- ./chart-responsive -->
+                        </div>
+                        <!-- /.col -->
+                    </div>
+                    <!-- /.row -->
+                </div>
+            </div>
+        </div>
+    </div>
+    <strong class="text-red"></strong>
+
+    <div class="row">
+        <div class="col-md-7">
+
+            <div class="box">
+                <div class="box-header with-border">
+                    <i class="fa fa-bar-chart-o"></i>
+                    <h3 class="box-title">Pares/Soles x Marca</h3>
+                    <div class="box-tools pull-right" style="top: 3px;">
+                        @*@Html.DropDownList("anioPS", new SelectList(ViewBag.anios, "cbo_codigo", "cbo_descripcion", "0"), new { @class = "form-control form-control-sm selectpicker anio", @id = "anioPS", @name = "anioPS", @data_informe = 4 })*@
+
+                    </div>
+                </div>
+                <!-- /.box-header -->
+                <div class="box-body">
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="form-inline">
+                                <div class="form-group date">
+                                    <label>Inicio: </label>&nbsp;&nbsp;
+                                    <div class="input-group input-group-sm">
+                                        <div class="input-group-addon">
+                                            <i class="fa fa-calendar"></i>
+                                        </div>
+                                        <input type="text" class="form-control pull-right" id="fechaIniPSM">
+                                    </div>
+                                </div>&nbsp;&nbsp;&nbsp;
+                                <div class="form-group date">
+                                    <label>Fin: </label>&nbsp;&nbsp;
+                                    <div class="input-group input-group-sm">
+                                        <div class="input-group-addon">
+                                            <i class="fa fa-calendar"></i>
+                                        </div>
+                                        <input type="text" class="form-control pull-right" id="fechaFinPSM">
+                                    </div>
+                                </div>&nbsp;&nbsp;&nbsp;
+                                <button type="button" class="btn btn-primary btn-sm" title="Mostrar" id="btnMostrarCharBarPSM"><i class="fa fa-search"></i></button>
+                                @*<a href="@Url.Action("RegTraConTdaExcel","BataClub")" class="btn btn-success btn-sm pull-right"><i class="glyphicon glyphicon-export"></i>&nbsp;&nbsp;Exportar</a>*@
+                            </div>
+
+                        </div>
+                    </div>
+                    <br />
+                    <div class="row">
+                        <div class="col-md-12">
+                            <p class="text-center" id="tituloBarCharPSM">
+                            </p>
+                            <div class="chart">
+                                <canvas id="barChartPSM" style="height: 290px;"></canvas>
+                            </div>
+                            <!-- /.chart-responsive -->
+                        </div>
+                    </div>
+                    <!-- /.row -->
+                </div>
+                <!-- ./box-body -->
+                <div id="PSM-load" class="overlay hidden">
+                    <i class="fa fa-refresh fa-spin"></i>
+                </div>
+            </div>
+            <!-- /.box -->
+        </div>
+        <div class="col-md-5">
+            <div class="box box-default">
+                <div class="box-header with-border">
+                    <i class="fa fa-pie-chart"></i>
+                    <h3 class="box-title">% Pares/Soles Bata/BataClub</h3>
+
+                    <div class="box-tools pull-right" style="top: 3px;">
+
+                        @Html.DropDownList("dw_sol_bata_bc", new SelectList(ViewBag.canal_venta, "can_venta_id", "can_venta_des", "0"), new { @class = "selectpicker", @data_live_search = "true", multiple = "multiple", @id = "dw_sol_bata_bc", @name = "dw_can_venta_soles", @data_informe = 4, @data_actions_box = "true", @data_selected_text_format = "count > 2" })
+                    </div>
+
+                    @*<button type="button" class="btn btn-primary btn-sm" title="Mostrar" id="btnMostrarCharBarcanal"><i class="fa fa-search"></i></button>*@
+                    @*<button type="button" class="btn btn-success btn-sm" title="Exportar a Excel" id="btnMostrarCharBarcanal_excel"><i class="glyphicon glyphicon-export">Exportar</i></button>*@
+                </div>
+                <!-- /.box-header -->
+                <div class="box-body">
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="form-inline">
+                                <div class="form-group date">
+                                    <div class="input-group input-group-sm">
+                                        <div class="input-group-addon">
+                                            <i class="fa fa-calendar"></i>
+                                        </div>
+                                        <input type="text" class="form-control pull-right" id="fechaIniPPS">
+                                    </div>
+                                </div>&nbsp;&nbsp;&nbsp;
+                                <div class="form-group date">
+                                    <div class="input-group input-group-sm">
+                                        <div class="input-group-addon">
+                                            <i class="fa fa-calendar"></i>
+                                        </div>
+                                        <input type="text" class="form-control pull-right" id="fechaFinPPS">
+                                    </div>
+                                </div>&nbsp;&nbsp;&nbsp;
+                                <button type="button" class="btn btn-primary btn-sm" title="Mostrar" id="btnMostrarChartPPS"><i class="fa fa-search"></i></button>
+                                @*<a href="@Url.Action("RegTraConTdaExcel","BataClub")" class="btn btn-success btn-sm pull-right"><i class="glyphicon glyphicon-export"></i>&nbsp;&nbsp;Exportar</a>*@
+                            </div>
+
+                        </div>
+                        <div class="col-md-2">
+                            @*<button type="button" class="btn btn-success btn-sm" title="Exportar a Excel" id="btnDataIncom_excel"><i class="glyphicon glyphicon-export">Exportar</i></button>*@
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-12">
+                            <p class="text-center text-bold" id="">
+                            </p>
+                            <div class="chart-responsive">
+                                <canvas id="ChartPPS" height="290"></canvas>
+                            </div>
+                            <!-- ./chart-responsive -->
+                        </div>
+                        <!-- /.col -->
+                    </div>
+                    <!-- /.row -->
+
+                </div>
+                <div id="PPS-load" class="overlay hidden">
+                    <i class="fa fa-refresh fa-spin"></i>
+                </div>
+            </div>
+        </div>
+
+
+    </div>
+
+
+</section>
+<div class="modal fade" id="modalPromDetTda" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                <div class="row">
+                    <div class="col-md-12">
+                        @*<p style="font-size:medium" class="text-primary modal-title" id="myModalLabel"><strong class="text-danger" id="desc_orce_art"></strong></p>*@
+                        <p style="font-size:medium" class="text-primary modal-title" id="myModalLabel"><b>Lista de Tiendas</b></p>
+                        <p id="tituloPromDetTda" class="text-bold text-danger"></p>
+                    </div>
+                    @*<div class="col-md-6 text-right">
+                            <span style="font-size:medium" class="label label-danger" id="maAtributoArt"></span>
+                        </div>*@
+                </div>
+            </div>
+            <div style="font-size:small" class="modal-body" id="listTdaProm">
+
+            </div>
+            <div class="modal-footer">
+                <p id="totalesPromocionesDetTda"></p>
+                <button type="button" class="btn btn-default" data-dismiss="modal" onclick="">Cerrar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<script src="@Url.Content("~/Scripts/bootstrap.min.js")"></script>
+<script src="@Url.Content("~/Scripts/bootstrap-select.min.js")"></script>
+
+<script type="text/javascript">
+    var myChart;
+    var myDoughnutChart;
+    var myIncompletoChart;
+    var myChartPS;
+    var myBarChartTR;
+    var myBarChartCO;
+    var myChartComCL;
+    var cargando = '<div class="overlay">\
+                        <i class="fa fa-refresh fa-spin"></i>\
+                    </div>'
+
+
+    function sum(input) {
+
+        if (toString.call(input) !== "[object Array]")
+            return false;
+
+        var total = 0;
+        for (var i = 0; i < input.length; i++) {
+            if (isNaN(input[i])) {
+                continue;
+            }
+            total += Number(input[i]);
+        }
+        return total;
+    }
+    function getChartInformeMensual(informe, canvas, data) {
+        _chart = new Chart(canvas, {
+            type: 'bar',
+            data: data,
+            options: {
+                scales: {
+                    yAxes: [{
+                        ticks: {
+                            beginAtZero: true,
+                        }
+                    }],
+                    xAxes: [{
+                        ticks: {
+                            callback: function (value) {
+                                if (value.length > 7 && informe == 6) {
+                                    return value.substr(0, 7) + "..."; //truncate
+                                } else {
+                                    return value
+                                }
+                            }
+                        }
+                    }],
+                },
+                tooltips: {
+                    mode: 'index',
+                    intersect: false,
+                    backgroundColor: 'rgba(237, 237, 237,0.8)',
+                    bodyFontColor: 'rgba(73, 73, 73,0.8)',
+                    borderWidth: 1,
+                    borderColor: 'rgba(158, 158, 158, 1)',
+                    titleFontColor: 'rgba(73, 73, 73,0.8)',
+                    callbacks: {
+                        title: function (tooltipItems, data) {
+                            //if (informe == 6){
+                            var idx = tooltipItems[0].index;
+                            return data.labels[idx]; //do something with title
+                            //}
+                        },
+                    }
+                }
+            }
+        });
+        if (informe == 2) {
+            myChart = _chart;
+        } else if (informe == 4) {
+            myChartPS = _chart;
+        } else if (informe == 6) {
+            myBarChartTR = _chart;
+        }
+        else if (informe = 7) {
+            myBarChartCO = _chart;
+        }
+    }
+    // function getChartCompras(canvas , data) {
+    //    myDoughnutChart = new Chart(canvas, {
+    //        type: 'doughnut',
+    //        data: data,
+    //        pie:{
+    //            show:true,
+    //        },
+    //        options: {
+    //            legend: {
+    //                position: 'bottom'
+    //            },
+    //            tooltips: {
+    //                backgroundColor: 'rgba(237, 237, 237,0.8)',
+    //                bodyFontColor: 'rgba(46, 46, 46, 0.9)',
+    //                borderWidth: 1,
+    //                borderColor: 'rgba(158, 158, 158, 1)',
+    //                titleFontColor: 'rgba(73, 73, 73,0.8)'
+    //            },
+
+    //        }
+    //    });
+    //    var total = sum(data.datasets[0].data);
+    //    $("#tituloComprasChar").html("Total: " + total.toLocaleString('es-PE'));
+    //}
+    function getChartCanales(canvas, data) {
+        myDoughnutChart = new Chart(canvas, {
+            type: 'doughnut',
+            data: data,
+            options: {
+                legend: {
+                    position: 'bottom'
+                },
+                tooltips: {
+                    backgroundColor: 'rgba(237, 237, 237,0.8)',
+                    bodyFontColor: 'rgba(46, 46, 46, 0.9)',
+                    borderWidth: 1,
+                    borderColor: 'rgba(158, 158, 158, 1)',
+                    titleFontColor: 'rgba(73, 73, 73,0.8)'
+                },
+            }
+        });
+        var total = sum(data.datasets[0].data);
+        $("#tituloCanalesChar").html("Total: " + total.toLocaleString('es-PE'));
+    }
+
+    function getChartIncompleto(canvas, data) {
+        myIncompletoChart = new Chart(canvas, {
+            type: 'doughnut',
+            data: data,
+            options: {
+                legend: {
+                    position: 'bottom'
+                },
+                tooltips: {
+                    backgroundColor: 'rgba(237, 237, 237,0.8)',
+                    bodyFontColor: 'rgba(46, 46, 46, 0.9)',
+                    borderWidth: 1,
+                    borderColor: 'rgba(158, 158, 158, 1)',
+                    titleFontColor: 'rgba(73, 73, 73,0.8)'
+                },
+            }
+        });
+        //var total = sum(data.datasets[0].data);
+        //$("#tituloCanalesChar").html("Total: " + total.toLocaleString('es-PE'));
+    }
+
+    function getChartCompra_CL(canvas, data) {
+        myChartComCL = new Chart(canvas, {
+            type: 'doughnut',
+            data: data,
+            options: {
+                legend: {
+                    position: 'bottom'
+                },
+                tooltips: {
+                    backgroundColor: 'rgba(237, 237, 237,0.8)',
+                    bodyFontColor: 'rgba(46, 46, 46, 0.9)',
+                    borderWidth: 1,
+                    borderColor: 'rgba(158, 158, 158, 1)',
+                    titleFontColor: 'rgba(73, 73, 73,0.8)'
+                },
+            }
+        });
+        var total = sum(data.datasets[0].data);
+        $("#tituloBarCharCompra_CL").html("Total: " + total.toLocaleString('es-PE'));
+    }
+
+    function getChartMensualRegMiem(canvas, data, totalesGenero) {
+        getChartInformeMensual(2, canvas, data);
+        var totRegistrados = sum(data.datasets[0].data);
+        var totMiembros = sum(data.datasets[1].data);
+        var title = '<strong class="text-light-blue">R: ' + totRegistrados.toLocaleString('es-PE') + '</strong>&nbsp;&nbsp;&nbsp;&nbsp;' +
+            '<strong class="text-red">M: ' + totMiembros.toLocaleString('es-PE') + '</strong>&nbsp;&nbsp;' +
+            '<strong class="">Total: ' + parseFloat(totRegistrados + totMiembros).toLocaleString('es-PE') + '</strong>&nbsp;&nbsp;&nbsp;&nbsp;'
+        $("#tituloBarChar").html(title);
+        for (var i = 0; i < totalesGenero.length; i++) {
+            if (totalesGenero[i].genero == 'FEMENINO') {
+                $("#totalFemenino").html(totalesGenero[i].registros.toLocaleString('es-PE'))
+            }
+            else if (totalesGenero[i].genero == 'MASCULINO') {
+                $("#totalMasculino").html(totalesGenero[i].registros.toLocaleString('es-PE'))
+            }
+            else if (totalesGenero[i].genero == 'SIN DATOS') {
+                $("#totalNulo").html(totalesGenero[i].registros.toLocaleString('es-PE'))
+            }
+            else {
+                $("#totalOtro").html(totalesGenero[i].registros.toLocaleString('es-PE'))
+            }
+        }
+    }
+    function getChartSuperv(canvas, data, tiendas) {
+        if (data != null) {
+            getChartInformeMensual(6, canvas, data);
+            var totaltranSup = sum(data.datasets[0].data).toLocaleString('es-PE');
+            var totalregSup = sum(data.datasets[1].data).toLocaleString('es-PE');
+            var totalConSup = sum(data.datasets[2].data).toLocaleString('es-PE');
+            var totalBataclub = sum(data.datasets[3].data).toLocaleString('es-PE');
+
+            var title = '<strong style="color: rgb(42, 152, 102)">T: ' + totaltranSup + '</strong>&nbsp;&nbsp;' +
+                '<strong style="color: rgb(90, 90, 90)">P: ' + totalregSup + '</strong>&nbsp;&nbsp;&nbsp;&nbsp;' +
+                '<strong style="color: rgb(243, 156, 18, 1)">C: ' + totalConSup + '</strong>&nbsp;&nbsp;&nbsp;' +
+                '<strong style="color: rgb(230, 101, 101, 1)">B: ' + totalBataclub + '</strong>&nbsp;&nbsp;'
+            $("#tituloBarCharSuperv").html(title);
+        }
+        var tbody = '<tr><th class="col-md-9">Tiendas</th><th class="col-md-1">Tran</th><th class="col-md-1">Reg</th><th class="col-md-1">Cons</th><th class="col-md-1">BA</th></tr>';
+        var ultimoSup = "";
+        for (var i = 0; i < tiendas.length; i++) {
+            var sup = tiendas[i].supervisor;
+            if (sup != ultimoSup) {
+                tbody += '<tr><th colspan="3">' + sup + '</th></tr>';
+                ultimoSup = sup;
+            }
+            tbody += '<tr>\
+                        <td class="text"><span>' + tiendas[i].tienda + '</span></td>\
+                        <td><span class="badge bg-transac">' + tiendas[i].transac + '</span></td>\
+                        <td><span class="badge bg-registros">' + tiendas[i].registros + '</span></td>\
+                        <td><span class="badge bg-consumido">' + tiendas[i].consumido + '</span></td>\
+                        <td><span class="badge bg-bataclub">' + tiendas[i].bataclub + '</span></td>\
+                      </tr>'
+        }
+        $("#tiendasDetalle").html(tbody);
+
+        var totaltdaRegSup = 0;
+        var totaltdaTranSup = 0;
+        var totaltdaConSup = 0;
+        var totaltdaBASup = 0;
+        for (var i = 0; i < tiendas.length; i++) {
+            totaltdaRegSup += parseFloat(tiendas[i].registros);
+            totaltdaTranSup += parseFloat(tiendas[i].transac);
+            totaltdaConSup += parseFloat(tiendas[i].consumido);
+            totaltdaBASup += parseFloat(tiendas[i].bataclub);
+        }
+        var title2 = '<strong class="pull-left">#: ' + tiendas.length + '</strong>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;' +
+        '<strong style="color: rgb(42, 152, 102)">T: ' + totaltdaTranSup.toLocaleString('es-PE') + '</strong>&nbsp;&nbsp;' +
+            '<strong style="color: rgb(90, 90, 90)">R: ' + totaltdaRegSup.toLocaleString('es-PE') + '</strong>&nbsp;&nbsp;&nbsp;&nbsp;' +
+                '<strong style="color: rgb(243, 156, 18)">C: ' + totaltdaConSup.toLocaleString('es-PE') + '</strong>&nbsp;&nbsp;' +
+                '<strong style="color: rgb(230, 101, 101)">B: ' + totaltdaBASup.toLocaleString('es-PE') + '</strong>&nbsp;&nbsp;'
+        $("#totalesTiendas").html(title2);
+    }
+    function getChartCompras(canvas, data, tipo) {
+        if (data != null) {
+            getChartInformeMensual(7, canvas, data);
+            var totaltrancom = sum(data.datasets[0].data).toLocaleString('es-PE');
+            var totalmtocom = sum(data.datasets[1].data).toLocaleString('es-PE');
+            var title = '<strong style="color: rgb(42, 152, 102)">T: ' + totaltrancom + '</strong>&nbsp;&nbsp;' +
+                '<strong style="color: rgb(90, 90, 90)">M: ' + totalmtocom + '</strong>&nbsp;&nbsp;'
+            $("#tituloBarCharCompra").html(title);
+        }
+
+        var tbody = '<tr><th class="col-md-9">Prom.</th><th class="col-md-1">Monto</th><th class="col-md-1">Transac</th></tr>';
+        var ultimoCom = "";
+        for (var i = 0; i < tipo.length; i++) {
+            var com = tipo[i].tipo;
+            if (com != ultimoCom) {
+                tbody += '<tr><th colspan="3">' + com + '</th></tr>';
+                ultimoCom = com;
+            }
+            tbody += '<tr><td class="text"><span>' + tipo[i].prom + '</span></td><td><span class="badge bg-transac">' + tipo[i].monto + '</span></td><td><span class="badge bg-registros">' + tipo[i].transac + '</span></td></tr>'
+        }
+        $("#ComprasDetalle").html(tbody);
+
+        var totaltipoReg = 0;
+        var totaltipoMonto = 0;
+
+        for (var i = 0; i < tipo.length; i++) {
+            totaltipoReg += parseFloat(tipo[i].transac);
+            totaltipoMonto += parseFloat(tipo[i].monto);
+        }
+        var title2 = '<strong class="pull-left">#: ' + tipo.length + '</strong>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;' +
+        '<strong style="color: rgb(42, 152, 102)">M: ' + totaltipoMonto.toLocaleString('es-PE') + '</strong>&nbsp;&nbsp;' +
+            '<strong style="color: rgb(90, 90, 90)">T: ' + totaltipoReg.toLocaleString('es-PE') + '</strong>&nbsp;&nbsp;'
+        //'<strong style="color: rgb(243, 156, 18)">C: ' + totaltdaConSup.toLocaleString('es-PE') + '</strong>&nbsp;&nbsp;' +
+        //'<strong style="color: rgb(230, 101, 101)">B: ' + totaltdaBASup.toLocaleString('es-PE') + '</strong>&nbsp;&nbsp;'
+        $("#totalesCompras").html(title2);
+
+
+    }
+    function getChartMensualPS(canvas, data, proms, mes, anio) {
+        if (data != null) {
+            getChartInformeMensual(4, canvas, data);
+            var totalPares = sum(data.datasets[0].data).toLocaleString('es-PE');
+            var totalSoles = sum(data.datasets[1].data).toLocaleString('es-PE');
+            var title = '<strong style="color: rgb(160, 100, 87)">P: ' + totalPares + '</strong>&nbsp;&nbsp;&nbsp;&nbsp;' +
+                '<strong style="color: rgb(104, 123, 0)">S/ ' + totalSoles + '</strong>&nbsp;&nbsp;'
+            $("#tituloBarCharPS").html(title);
+        }
+        var tbody = '<tr><th class="col-md-8">Promociones</th><th class="col-md-2">Pares</th><th class="col-md-2">Soles</th></tr>';
+        var strmes;
+        if (mes == null) {
+            tbody += '<tr><th colspan="3">' + anio + '</th></tr>'
+        } else {
+            strmes = myChartPS.chart.config.data.labels[mes - 1]
+            tbody += '<tr><th>' + strmes + '</th></tr>'
+
+        }
+        for (var i = 0; i < proms.length; i++) {
+            tbody += '<tr class="prom-det-tda"  data-tot-pares="' + proms[i].pares.toLocaleString('es-PE') + '"  data-tot-soles="' + proms[i].soles.toLocaleString('es-PE') + '"  data-prom="' + proms[i].promocion + '"  data-anio-prom="' + anio + '" data-mes-prom="' + mes + '" data-strmes-prom="' + strmes + '"  ><td class="text"><span>' + proms[i].promocion + '</span></td><td><span class="badge bg-pares">' + proms[i].pares.toLocaleString('es-PE') + '</span></td><td><span class="badge bg-soles">' + proms[i].soles.toLocaleString('es-PE') + '</span></td></tr>'
+        }
+        $("#promocionesDetalle").html(tbody);
+
+        var totalParesP = 0;
+        var totalSolesP = 0;
+        for (var i = 0; i < proms.length; i++) {
+            totalParesP += parseFloat(proms[i].pares);
+            totalSolesP += parseFloat(proms[i].soles);
+        }
+        var title2 = '<strong class="pull-left">#: ' + proms.length + '</strong>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong style="color: rgb(160, 100, 87)">P: ' + totalParesP.toLocaleString('es-PE') + '</strong>&nbsp;&nbsp;&nbsp;&nbsp;' +
+                '<strong style="color: rgb(104, 123, 0)">S/ ' + totalSolesP.toLocaleString('es-PE') + '</strong>&nbsp;&nbsp;'
+        $("#totalesPromociones").html(title2);
+        //totales pendientes
+    }
+
+
+
+
+    /** Ini Pares/soles x Marca **/
+    function GetChartPSM() {
+        $("#PSM-load").removeClass("hidden");
+        $.ajax({
+            type: "POST",
+            url: '@Url.Action("GetChartPSM", "BataClub")',
+            data: { fechaini: $('#fechaIniPSM').val(), fechafin: $('#fechaFinPSM').val() },
+            success: function (data) {
+                //quitar mensaje cargando
+                // ini chart
+                var _data = JSON.parse(data.result);
+                try {
+                    _cPSM.destroy();
+                } catch (e) {
+
+                }
+                _cPSM = new Chart(document.getElementById('barChartPSM'), {
+                    type: 'bar',
+                    data: _data,
+                    options: {
+                        scales: {
+                            yAxes: [{
+                                ticks: {
+                                    beginAtZero: true,
+                                }
+                            }],
+                            xAxes: [{
+                                ticks: {
+                                    callback: function (value) {
+                                        if (value.length > 7 && 5 == 6) {
+                                            return value.substr(0, 7) + "..."; //truncate
+                                        } else {
+                                            return value
+                                        }
+                                    }
+                                }
+                            }],
+                        },
+                        tooltips: {
+                            mode: 'index',
+                            intersect: false,
+                            backgroundColor: 'rgba(237, 237, 237,0.8)',
+                            bodyFontColor: 'rgba(73, 73, 73,0.8)',
+                            borderWidth: 1,
+                            borderColor: 'rgba(158, 158, 158, 1)',
+                            titleFontColor: 'rgba(73, 73, 73,0.8)',
+                            callbacks: {
+                                title: function (tooltipItems, data) {
+                                    //if (informe == 6){
+                                    var idx = tooltipItems[0].index;
+                                    return data.labels[idx]; //do something with title
+                                    //}
+                                },
+                            }
+                        },
+                        maintainAspectRatio: false
+                    }
+                });
+                var title = '<strong style="color: rgb(147, 97, 228)">P: ' + sum(_data.datasets[0].data).toLocaleString('es-PE') + '</strong>&nbsp;&nbsp;&nbsp;&nbsp;' +
+                '<strong style="color: rgb(80, 230, 161)">S/ ' + sum(_data.datasets[1].data).toLocaleString('es-PE') + '</strong>&nbsp;&nbsp;'
+                $("#tituloBarCharPSM").html(title);
+
+                $("#PSM-load").addClass("hidden");
+
+                // fin chart
+            },
+            error: function (XMLHttpRequest, textStatus, errorThrown) {
+                $("#PSM-load").addClass("hidden");
+                var error = eval("(" + XMLHttpRequest.responseText + ")");
+                swal(error.Message);
+            }
+        });
+    }
+
+    /** Ini Pares/Clientes x Meses **/
+    function GetChartCxM() {
+        $("#CxM-load").removeClass("hidden");
+        $.ajax({
+            type: "POST",
+            url: '@Url.Action("GetChartCxM", "BataClub")',
+            data: { anio: $('#anioIm').val() },
+            success: function (data) {
+                //quitar mensaje cargando
+                // ini chart
+                var _data = JSON.parse(data.chartDS);
+                var totalesGenero = JSON.parse(data.genero);
+                try {
+                    _cCxM.destroy();
+                } catch (e) {
+
+                }
+                _cCxM = new Chart(document.getElementById('barChart'), {
+                    type: 'bar',
+                    data: _data,
+                    options: {
+                        scales: {
+                            yAxes: [{
+                                ticks: {
+                                    beginAtZero: true,
+                                }
+                            }],
+                            xAxes: [{
+                                ticks: {
+                                    callback: function (value) {
+                                        if (value.length > 7 && 5 == 6) {
+                                            return value.substr(0, 7) + "..."; //truncate
+                                        } else {
+                                            return value
+                                        }
+                                    }
+                                }
+                            }],
+                        },
+                        tooltips: {
+                            mode: 'index',
+                            intersect: false,
+                            backgroundColor: 'rgba(237, 237, 237,0.8)',
+                            bodyFontColor: 'rgba(73, 73, 73,0.8)',
+                            borderWidth: 1,
+                            borderColor: 'rgba(158, 158, 158, 1)',
+                            titleFontColor: 'rgba(73, 73, 73,0.8)',
+                            callbacks: {
+                                title: function (tooltipItems, data) {
+                                    //if (informe == 6){
+                                    var idx = tooltipItems[0].index;
+                                    return data.labels[idx]; //do something with title
+                                    //}
+                                },
+                            }
+                        },
+                        maintainAspectRatio: false
+                    }
+                });
+                var totRegistrados = sum(_data.datasets[0].data);
+                var totMiembros = sum(_data.datasets[1].data);
+                var title = '<strong class="text-light-blue">R: ' + totRegistrados.toLocaleString('es-PE') + '</strong>&nbsp;&nbsp;&nbsp;&nbsp;' +
+                    '<strong class="text-red">M: ' + totMiembros.toLocaleString('es-PE') + '</strong>&nbsp;&nbsp;' +
+                    '<strong class="">Total: ' + parseFloat(totRegistrados + totMiembros).toLocaleString('es-PE') + '</strong>&nbsp;&nbsp;&nbsp;&nbsp;'
+                $("#tituloBarChar").html(title);
+                for (var i = 0; i < totalesGenero.length; i++) {
+                    if (totalesGenero[i].genero == 'FEMENINO') {
+                        $("#totalFemenino").html(totalesGenero[i].registros.toLocaleString('es-PE'))
+                    }
+                    else if (totalesGenero[i].genero == 'MASCULINO') {
+                        $("#totalMasculino").html(totalesGenero[i].registros.toLocaleString('es-PE'))
+                    }
+                    else if (totalesGenero[i].genero == 'SIN DATOS') {
+                        $("#totalNulo").html(totalesGenero[i].registros.toLocaleString('es-PE'))
+                    }
+                    else {
+                        $("#totalOtro").html(totalesGenero[i].registros.toLocaleString('es-PE'))
+                    }
+                }
+
+                $("#CxM-load").addClass("hidden");
+
+                // fin chart
+            },
+            error: function (XMLHttpRequest, textStatus, errorThrown) {
+                $("#CxM-load").addClass("hidden");
+                var error = eval("(" + XMLHttpRequest.responseText + ")");
+                swal(error.Message);
+            }
+        });
+    }
+    /** Ini Porcentaje pares Soles **/
+    function GetChartPPS() {
+
+        var strCanal = $('#dw_sol_bata_bc').val();
+
+        if (strCanal == null) {
+            toastr.error('Seleccione Canales de venta', "Alerta");
+            $('#dw_sol_bata_bc').focus();
+            return;
+        }
+
+        strCanal = strCanal.toString();
+    
+
+        $("#PPS-load").removeClass("hidden");
+        $.ajax({
+            type: "POST",
+            url: '@Url.Action("GetChartPPS", "BataClub")',
+            data: { fechaini: $('#fechaIniPPS').val(), fechafin: $('#fechaFinPPS').val(), canal_venta_ps: strCanal },
+            success: function (data) {
+                // ini chart
+                var _data = JSON.parse(data.chartDS);
+                try {
+                    _cPPS.destroy();//
+                } catch (e) { }
+
+                _cPPS = new Chart(document.getElementById("ChartPPS"), {
+                    type: 'doughnut',
+                    data: _data,
+                    options: {
+                        legend: {
+                            position: 'bottom'
+                        },
+                        tooltips: {
+                            backgroundColor: 'rgba(237, 237, 237,0.8)',
+                            bodyFontColor: 'rgba(46, 46, 46, 0.9)',
+                            borderWidth: 1,
+                            borderColor: 'rgba(158, 158, 158, 1)',
+                            titleFontColor: 'rgba(73, 73, 73,0.8)',
+                            callbacks: {
+                                title: function (tooltipItems, data) {
+                                    //if (informe == 6){
+                                    return (tooltipItems[0].datasetIndex == 0) ? "PARES" : "SOLES"; //do something with title
+                                    //}
+                                },
+                                label: function (tooltipItem, data) {
+                                    var label = data.datasets[tooltipItem.datasetIndex].data[tooltipItem.index] || '';
+                                    return data.labels[tooltipItem.index] + ": " + label + ' %';
+                                }
+                            }
+                        },
+                        maintainAspectRatio: false,
+                    }
+                });
+
+                $("#PPS-load").addClass("hidden");
+                // fin chart
+            },
+            error: function (XMLHttpRequest, textStatus, errorThrown) {
+                $("#PPS-load").addClass("hidden");
+                var error = eval("(" + XMLHttpRequest.responseText + ")");
+                swal(error.Message);
+            }
+        });
+    }
+
+    /** Ini Canales x FEcha **/
+    function GetChartCxF(excel) {
+        $("#CxF-load").removeClass("hidden");
+        $.ajax({
+            type: "POST",
+            url: '@Url.Action("GetChartCxF", "BataClub")',
+            data: { fechaini: $('#fechaIni_canal').val(), fechafin: $('#fechaFin_canal').val() , excel : excel },
+            success: function (data) {
+                // ini chart
+                var _data = JSON.parse(data.chartDS);
+                try {
+                    _cCxF.destroy();//
+                } catch (e) { }
+
+                _cCxF = new Chart(document.getElementById("canalChart"), {
+                    type: 'doughnut',
+                    data: _data,
+                    options: {
+                        legend: {
+                            position: 'bottom'
+                        },
+                        tooltips: {
+                            backgroundColor: 'rgba(237, 237, 237,0.8)',
+                            bodyFontColor: 'rgba(46, 46, 46, 0.9)',
+                            borderWidth: 1,
+                            borderColor: 'rgba(158, 158, 158, 1)',
+                            titleFontColor: 'rgba(73, 73, 73,0.8)',
+                        },
+                        maintainAspectRatio: false,
+                    }
+                });
+                var total = sum(_data.datasets[0].data);
+                $("#tituloCanalesChar").html("Total: " + total.toLocaleString('es-PE'));
+
+                $("#CxF-load").addClass("hidden");
+                // fin chart
+            },
+            error: function (XMLHttpRequest, textStatus, errorThrown) {
+                $("#CxF-load").addClass("hidden");
+                var error = eval("(" + XMLHttpRequest.responseText + ")");
+                swal(error.Message);
+            }
+        });
+    }
+    /** Ini Ticket Promedio **/
+    function GetChartTP() {
+        $("#TP-load").removeClass("hidden");
+        $.ajax({
+            type: "POST",
+            url: '@Url.Action("GetChartTP", "BataClub")',
+            data: { fechaini: $('#fechaIniTP').val(), fechafin: $('#fechaFinTP').val()},
+            success: function (data) {
+                //quitar mensaje cargando
+                // ini chart
+                var _data = JSON.parse(data.chartDS);
+                try {
+                    _cTP.destroy();
+                } catch (e) {
+
+                }
+                _cTP = new Chart(document.getElementById('barChartTP'), {
+                    type: 'bar',
+                    data: _data,
+                    plugins: [ChartDataLabels],
+                    options: {
+                        scales: {
+                            yAxes: [{
+                                ticks: {
+                                    beginAtZero: true,
+                                }
+                            }],
+                            xAxes: [{
+                                ticks: {
+                                    callback: function (value) {
+                                        if (value.length > 7 && 5 == 6) {
+                                            return value.substr(0, 7) + "..."; //truncate
+                                        } else {
+                                            return value
+                                        }
+                                    }
+                                }
+                            }],
+                        },
+                        tooltips: {
+                            mode: 'index',
+                            intersect: false,
+                            backgroundColor: 'rgba(237, 237, 237,0.8)',
+                            bodyFontColor: 'rgba(73, 73, 73,0.8)',
+                            borderWidth: 1,
+                            borderColor: 'rgba(158, 158, 158, 1)',
+                            titleFontColor: 'rgba(73, 73, 73,0.8)',
+                            callbacks: {
+                                title: function (tooltipItems, data) {
+                                    //if (informe == 6){
+                                    var idx = tooltipItems[0].index;
+                                    return data.labels[idx]; //do something with title
+                                    //}
+                                },
+                            }
+                        },
+                        maintainAspectRatio: false,
+                        plugins: {
+                            datalabels: {
+                                color: 'white',
+                                font: {
+                                    weigth: 'bold',
+                                    size:17,
+                                },
+                                textAlign: 'end',
+                            }
+                        },
+                        legend: {
+                            display:false,
+                        }
+                    }
+                });
+
+                $("#TP-load").addClass("hidden");
+
+                // fin chart
+            },
+            error: function (XMLHttpRequest, textStatus, errorThrown) {
+                $("#TP-load").addClass("hidden");
+                var error = eval("(" + XMLHttpRequest.responseText + ")");
+                swal(error.Message);
+            }
+        });
+    }
+    /** Ini Cumplimiento Venta Bata **/
+   
+    function GetChartCVB(table, valor) {        
+        
+        $("#CVB-load").removeClass("hidden");
+        var semana = $('#semanaCVB').val() == null ? new[] :
+        $.ajax({
+            type: "POST",
+            url: '@Url.Action("GetChartCVB", "BataClub")',
+            data: { semana: $('#semanaCVB').val(), refresh : table },
+            success: function (data) {
+                var _data = JSON.parse(data.chartDS);
+                var _detalle = data.detalle;
+                if (table == null){
+                    try {
+                        _cCVB.destroy();//
+                    } catch (e) { }
+                    _cCVB = new Chart(document.getElementById("chartCVB"), {
+                        type: 'doughnut',
+                        data: _data,
+                        plugins: [ChartDataLabels],
+                        options: {
+                            legend: {
+                                position: 'bottom'
+                            },
+                            tooltips: {
+                                backgroundColor: 'rgba(237, 237, 237,0.8)',
+                                bodyFontColor: 'rgba(46, 46, 46, 0.9)',
+                                borderWidth: 1,
+                                borderColor: 'rgba(158, 158, 158, 1)',
+                                titleFontColor: 'rgba(73, 73, 73,0.8)',
+                                callbacks: {
+                                    title: function (tooltipItems, data) {
+                                        var idx = tooltipItems[0].index;
+                                        return data.datasets[tooltipItems[0].datasetIndex].label;
+                                    },
+                                }
+                            },
+                            maintainAspectRatio: false,
+                            plugins: {
+                                datalabels: {
+                                    color: 'white',
+                                    font: {
+                                        weigth: 'bold',
+                                        size: 12,
+                                    },
+                                    textAlign: 'end',
+                                    display: function (context) {
+                                        return context.dataset.data[context.dataIndex] > 15;
+                                    },
+                                }
+                            },
+                        }
+                    });
+                    $("#tituloBarChartCVB").html("Mostrando resultados para: " + ($('#semanaCVB').val() == null ? "" : $('#semanaCVB').val().toString()));
+                }
+
+                var tbody = '<tr>\
+                                <th class="col-md-1">Sem</th>\
+                                <th class="col-md-5">Tiendas</th>\
+                                <th class="col-md-2">V.' + 'Anterior' + '</th>\
+                                <th class="col-md-2">V.' + 'Actual' + '</th>\
+                                <th class="col-md-2">%</th>\
+                            </tr>';
+                if (valor == null || valor == "+100%") {
+                    tbody += '<tr><th colspan="5"><span class="badge bg-transac">' + '+100%' + '</span></th></tr>';
+                    for (var i = 0; i < _detalle.length; i++) {
+                        var porc = _detalle[i].porc;
+                        if (porc >= 100.0) {
+                            tbody += '<tr>\
+                                        <td>' + _detalle[i].n_semana + '</td>\
+                                        <td class="text"><span>' + _detalle[i].cod_entid + ' - ' + _detalle[i].des_entid + '</span></td>\
+                                        <td>' + _detalle[i].anterior + '</td>\
+                                        <td>' + _detalle[i].actual + '</td>\
+                                        <td>' + _detalle[i].porc + '</td>\
+                                    </tr>'
+                        }
+                    }
+                }
+                if (valor == null || valor == "90% - 100%") {
+                    tbody += '<tr><th colspan="5"><span class="badge bg-consumido">' + 'Entre 90% y 100%' + '</span></th></tr>';
+                    for (var i = 0; i < _detalle.length; i++) {
+                        var porc = _detalle[i].porc;
+                        if (porc >= 90.0 && porc < 100.0) {
+                            tbody += '<tr>\
+                                    <td>' + _detalle[i].n_semana + '</td>\
+                                    <td class="text"><span>' + _detalle[i].cod_entid + ' - ' + _detalle[i].des_entid + '</span></td>\
+                                    <td>' + _detalle[i].anterior + '</td>\
+                                    <td>' + _detalle[i].actual + '</td>\
+                                    <td>' + _detalle[i].porc + '</td>\
+                                </tr>'
+                        }
+                    }
+                }
+                if (valor == null || valor == "-90%") {
+                    tbody += '<tr><th colspan="5"><span class="badge bg-bataclub">' + '-90%' + '</span></th></tr>';
+                    for (var i = 0; i < _detalle.length; i++) {
+                        var porc = _detalle[i].porc;
+                        if (porc < 90.0) {
+                            tbody += '<tr>\
+                                    <td>' + _detalle[i].n_semana + '</td>\
+                                    <td class="text"><span>' + _detalle[i].cod_entid + ' - ' + _detalle[i].des_entid + '</span></td>\
+                                    <td>' + _detalle[i].anterior + '</td>\
+                                    <td>' + _detalle[i].actual + '</td>\
+                                    <td>' + _detalle[i].porc + '</td>\
+                                </tr>'
+                        }
+                    }
+                }
+                $("#tiendasDetalleCVB").html(tbody);
+                $("#CVB-load").addClass("hidden");
+                    // fin chart
+            },
+            error: function (XMLHttpRequest, textStatus, errorThrown) {
+                $("#CVB-load").addClass("hidden");
+                var error = eval("(" + XMLHttpRequest.responseText + ")");
+                swal(error.Message);
+            }        
+        });    
+    }
+    /** Ini comparativo venta x categoria **/
+    function GetChartVxC() {
+        $("#VxC-load").removeClass("hidden");
+        $.ajax({
+            type: "POST",
+            url: '@Url.Action("GetChartVxC", "BataClub")',
+            data: { fechaini: $('#fechaIniVxC').val(), fechafin: $('#fechaFinVxC').val() },
+            success: function (data) {
+                //quitar mensaje cargando
+                // ini chart
+                var _data = JSON.parse(data.result);
+                try {
+                    _cVxC.destroy();
+                } catch (e) {
+
+                }
+                _cVxC = new Chart(document.getElementById('barChartVxC'), {
+                    type: 'bar',
+                    data: _data,
+                    plugins: [ChartDataLabels],
+                    options: {
+                        scales: {
+                            yAxes: [{
+                                ticks: {
+                                    beginAtZero: true,
+                                }
+                            }],
+                            xAxes: [{
+                                ticks: {
+                                    callback: function (value) {
+                                        if (value.length > 7 && 5 == 6) {
+                                            return value.substr(0, 7) + "..."; //truncate
+                                        } else {
+                                            return value
+                                        }
+                                    }
+                                }
+                            }],
+                        },
+                        tooltips: {
+                            mode: 'index',
+                            intersect: false,
+                            backgroundColor: 'rgba(237, 237, 237,0.8)',
+                            bodyFontColor: 'rgba(73, 73, 73,0.8)',
+                            borderWidth: 1,
+                            borderColor: 'rgba(158, 158, 158, 1)',
+                            titleFontColor: 'rgba(73, 73, 73,0.8)',
+                            callbacks: {
+                                title: function (tooltipItems, data) {
+                                    //if (informe == 6){
+                                    var idx = tooltipItems[0].index;
+                                    return data.labels[idx]; //do something with title
+                                    //}
+                                },
+                            }
+                        },
+                        plugins: {
+                            datalabels: {
+                                align: 'end',
+                                anchor: 'end',
+                                color: function (context) {
+                                    return context.dataset.backgroundColor;
+                                },
+                                font:{
+                                    weigth: 'bold',
+                                    size: 12,
+                                },
+                            }
+                        },
+                        maintainAspectRatio: false
+                    }
+                });
+                //var title = '<strong style="color: rgb(147, 97, 228)">P: ' + sum(_data.datasets[0].data).toLocaleString('es-PE') + '</strong>&nbsp;&nbsp;&nbsp;&nbsp;' +
+                //'<strong style="color: rgb(80, 230, 161)">S/ ' + sum(_data.datasets[1].data).toLocaleString('es-PE') + '</strong>&nbsp;&nbsp;'
+                //$("#tituloBarCharVxC").html(title);
+
+                $("#VxC-load").addClass("hidden");
+
+                // fin chart
+            },
+            error: function (XMLHttpRequest, textStatus, errorThrown) {
+                $("#VxC-load").addClass("hidden");
+                var error = eval("(" + XMLHttpRequest.responseText + ")");
+                swal(error.Message);
+            }
+        });
+    }
+
+    /** Ini info Distritos **/
+    function GetChartDist(table, valor) {
+        $("#Dist-load").removeClass("hidden");
+        $.ajax({
+            type: "POST",
+            url: '@Url.Action("GetChartDist", "BataClub")',
+            data: { fechaini: $('#fechaIni').val(), fechafin: $('#fechaFin').val() , refresh : table },
+            success: function (data) {
+                //quitar mensaje cargando
+                // ini chart
+                var _data = JSON.parse(data.result);
+                var _detalle = data.detalles;
+                if (table == null){
+                    try {
+                        _cDist.destroy();
+                    } catch (e) {
+
+                    }
+                    _cDist = new Chart(document.getElementById('barChartDist'), {
+                        type: 'bar',
+                        data: _data,
+                        plugins: [ChartDataLabels],
+                        options: {
+                            scales: {
+                                yAxes: [{
+                                    ticks: {
+                                        beginAtZero: true,
+                                    }
+                                }],
+                                xAxes: [{
+                                    ticks: {
+                                        callback: function (value) {
+                                            if (value.length > 7) {
+                                                return value.substr(0, 3); //truncate
+                                            } else {
+                                                return value
+                                            }
+                                        }
+                                    }
+                                }],
+                            },
+                            tooltips: {
+                                mode: 'index',
+                                intersect: false,
+                                backgroundColor: 'rgba(237, 237, 237,0.8)',
+                                bodyFontColor: 'rgba(73, 73, 73,0.8)',
+                                borderWidth: 1,
+                                borderColor: 'rgba(158, 158, 158, 1)',
+                                titleFontColor: 'rgba(73, 73, 73,0.8)',
+                                callbacks: {
+                                    title: function (tooltipItems, data) {
+                                        //if (informe == 6){
+                                        var idx = tooltipItems[0].index;
+                                        return data.labels[idx]; //do something with title
+                                        //}
+                                    },
+                                }
+                            },
+                            plugins: {
+                                datalabels: {
+                                    align: 'end',
+                                    anchor: 'end',
+                                    color: function (context) {
+                                        return context.dataset.backgroundColor;
+                                    },
+                                    font: {
+                                        weigth: 'bold',
+                                        size: 12,
+                                    },
+                                    display: function (context,data) {
+                                        try {
+                                            return context.chart.data.datasets.filter(w=> w._meta[context.chart.id].hidden == null).length == 1;
+                                        } catch (e) {
+                                            console.log(e.message);
+                                            return false;
+                                        }                                    
+                                    }
+                                }
+                            },
+                            maintainAspectRatio: false
+                        }
+                    });
+                }
+                //var title = '<strong style="color: rgb(147, 97, 228)">P: ' + sum(_data.datasets[0].data).toLocaleString('es-PE') + '</strong>&nbsp;&nbsp;&nbsp;&nbsp;' +
+                //'<strong style="color: rgb(80, 230, 161)">S/ ' + sum(_data.datasets[1].data).toLocaleString('es-PE') + '</strong>&nbsp;&nbsp;'
+                //$("#tituloBarCharVxC").html(title);
+                var tbody = '<tr>\
+                                <th class="col-md-6">Tiendas</th>\
+                                <th class="col-md-2">Tran</th>\
+                                <th class="col-md-2">Reg</th>\
+                                <th class="col-md-2">Con</th>\
+                                <th class="col-md-2">Miembros</th>\
+                            </tr>';
+                var ultimo_dist = ""                
+                for (var i = 0; i < _detalle.length; i++) {
+                    if (valor == null || _detalle[i].distrito + ' (' + _detalle[i].supervisor.substring(0, _detalle[i].supervisor.indexOf(" ")) + ')' == valor) {
+                        if (_detalle[i].distrito != ultimo_dist) {
+                            tbody += '<tr><th colspan="5">' + _detalle[i].distrito + ' (' + _detalle[i].supervisor + ')' + '</th></tr>';
+                        }
+                        tbody += '<tr>\
+                                    <td class="text"><span>' + _detalle[i].tienda + '</span></td>\
+                                    <td><span class="badge bg-transac">' + _detalle[i].transac + '</span></td>\
+                                    <td><span class="badge bg-registros">' + _detalle[i].registros + '</span></td>\
+                                    <td><span class="badge bg-consumido">' + _detalle[i].consumido + '</span></td>\
+                                    <td><span class="badge bg-bataclub">' + _detalle[i].bataclub + '</span></td>\
+                                </tr>';
+                        ultimo_dist = _detalle[i].distrito;
+                    }                    
+                }
+                $("#tiendasDetalle").html(tbody);
+
+                $("#Dist-load").addClass("hidden");
+
+                // fin chart
+            },
+            error: function (XMLHttpRequest, textStatus, errorThrown) {
+                $("#Dist-load").addClass("hidden");
+                var error = eval("(" + XMLHttpRequest.responseText + ")");
+                swal(error.Message);
+            }
+        });
+    }
+
+
+    $(document).ready(function () {        
+        var date = new Date();
+        var firstDay = new Date(date.getFullYear(), date.getMonth(), 1);
+        var gSite = '';
+        $("body").toggleClass('sidebar-collapse');
+        var pathname = window.location.pathname;
+        var res = pathname.split("/")
+
+        if (res[1].toString() != "Dashboard") {
+            gSite = "/" + res[1].toString();
+        }
+
+        $('#fechaIni').datepicker({
+            format: "dd-mm-yyyy",
+            autoclose: true,
+            maxDate: new Date(),
+        }).datepicker("setDate", firstDay);
+        $('#fechaFin').datepicker({
+            format: "dd-mm-yyyy",
+            autoclose: true,
+            maxDate: new Date(),
+        }).datepicker("setDate", "0");
+
+        $('#fechaIniPSM').datepicker({
+            format: "dd-mm-yyyy",
+            autoclose: true,
+            maxDate: new Date(),
+        }).datepicker("setDate", firstDay);
+        $('#fechaFinPSM').datepicker({
+            format: "dd-mm-yyyy",
+            autoclose: true,
+            maxDate: new Date(),
+        }).datepicker("setDate", "0");
+
+        $('#fechaIni_com').datepicker({
+            format: "dd-mm-yyyy",
+            autoclose: true,
+            maxDate: new Date(),
+        }).datepicker("setDate", firstDay);
+
+        $('#fechaFin_com').datepicker({
+            format: "dd-mm-yyyy",
+            autoclose: true,
+            maxDate: new Date(),
+        }).datepicker("setDate", "0");
+
+        $('#fechaIni_com_cl').datepicker({
+            format: "dd-mm-yyyy",
+            autoclose: true,
+            maxDate: new Date(),
+        }).datepicker("setDate", firstDay);
+
+        $('#fechaFin_com_cl').datepicker({
+            format: "dd-mm-yyyy",
+            autoclose: true,
+            maxDate: new Date(),
+        }).datepicker("setDate", "0");
+
+        $('#fechaIni_canal').datepicker({
+            format: "dd-mm-yyyy",
+            autoclose: true,
+            maxDate: new Date(),
+        }).datepicker("setDate", firstDay);
+        $('#fechaFin_canal').datepicker({
+            format: "dd-mm-yyyy",
+            autoclose: true,
+            maxDate: new Date(),
+        }).datepicker("setDate", "0");
+
+        $('#fechaIniPPS').datepicker({
+            format: "dd-mm-yyyy",
+            autoclose: true,
+            maxDate: new Date(),
+        }).datepicker("setDate", firstDay);
+        $('#fechaFinPPS').datepicker({
+            format: "dd-mm-yyyy",
+            autoclose: true,
+            maxDate: new Date(),
+        }).datepicker("setDate", "0");
+
+        $('#fechaIniTP').datepicker({
+            format: "dd-mm-yyyy",
+            autoclose: true,
+            maxDate: new Date(),
+        }).datepicker("setDate", firstDay);
+        $('#fechaFinTP').datepicker({
+            format: "dd-mm-yyyy",
+            autoclose: true,
+            maxDate: new Date(),
+        }).datepicker("setDate", "0");
+
+        $('#fechaIniVxC').datepicker({
+            format: "dd-mm-yyyy",
+            autoclose: true,
+            maxDate: new Date(),
+        }).datepicker("setDate", firstDay);
+        $('#fechaFinVxC').datepicker({
+            format: "dd-mm-yyyy",
+            autoclose: true,
+            maxDate: new Date(),
+        }).datepicker("setDate", "0");
+
+        $('#dw_can_venta_soles option').attr("selected", "selected");
+        $('#dw_can_venta_soles').selectpicker('refresh');
+
+        $('#dw_sol_bata_bc option').attr("selected", "selected");
+        $('#dw_sol_bata_bc').selectpicker('refresh');
+
+
+        var primerDia = new Date(date.getFullYear(), 0, 1);      
+
+        $('#fechaIni_PS').datepicker({
+            format: "dd-mm-yyyy",
+            autoclose: true,
+            maxDate: new Date(),
+        }).datepicker("setDate", primerDia);
+
+
+        $('#fechaFin_PS').datepicker({
+            format: "dd-mm-yyyy",
+            autoclose: true,
+            maxDate: new Date(),
+        }).datepicker("setDate", "0");
+
+
+
+        /** Ini Clientes x Mes **/
+        GetChartCxM();
+        $("#anioIm").change(function () {
+            GetChartCxM();
+        });
+
+        /** Ini Canales x Fecha **/
+        GetChartCxF(false);
+        $("#btnMostrarCharBarcanal").click(function () {
+            GetChartCxF(false);
+        });
+
+        /** Ini Pares/soles x Marca **/
+        GetChartPSM();
+        $("#btnMostrarCharBarPSM").click(function () {
+            GetChartPSM();
+        });
+
+        /** Ini Porcentaje Pares Soles **/
+        GetChartPPS();
+        $("#btnMostrarChartPPS").click(function () {
+            GetChartPPS();
+        });
+
+        /** Ini Ticket Promedio **/
+        GetChartTP();
+        $("#btnMostrarChartTP").click(function () {
+            GetChartTP();
+        });
+
+        /** Ini Cumplimiento Venta Bata **/
+        GetChartCVB(null,null);
+        $("#btnMostrarChartCVB").click(function () {
+            GetChartCVB(null,null);
+        });
+        document.getElementById("chartCVB").onclick = function (e) {
+            try {
+                var activeIndex = _cCVB.tooltip._lastActive[0]._index;
+                var clickCoordinates = Chart.helpers.getRelativePosition(e, _cCVB.chart);
+                if (clickCoordinates.y >= 36) {
+                    GetChartCVB(1,_cCVB.chart.config.data.labels[activeIndex]);                   
+                }
+            } catch (e) {
+
+            }
+        };
+        
+        /** Ini Venta por categoria **/
+        GetChartVxC();
+        $("#btnMostrarCharBarVxC").click(function () {
+            GetChartVxC();
+        });
+        /** Ini info distrito **/
+        GetChartDist(null,null);
+        $("#btnMostrarChartBarDist").click(function () {
+            GetChartDist(null,null);
+        });
+        $("#btnMostrarChartBarPS").click(function () {
+
+            var strCanal = $('#dw_can_venta_soles').val();
+
+            if (strCanal == null) {
+                toastr.error('Seleccione Canales de venta', "Alerta");
+                $('#dw_can_venta_soles').focus();
+                return;
+            }
+
+            strCanal=strCanal.toString();
+            var informe = 4;
+            var anio = 2020;
+            updateCharts(anio, informe, null, null, null, null, null, null, null, null, null, null, null, $('#fechaIni_PS').val(), $('#fechaFin_PS').val(), strCanal);
+
+        });
+
+        document.getElementById("barChartDist").onclick = function (e) {
+            try {
+                var activeIndex = _cDist.tooltip._lastActive[0]._index;
+                var clickCoordinates = Chart.helpers.getRelativePosition(e, _cDist.chart);
+                if (clickCoordinates.y >= 36) {
+                    GetChartDist(1, _cDist.chart.config.data.labels[activeIndex]);
+                }
+            } catch (e) {
+
+            }
+        };
+
+        $("#btnMostrarCharBarSup").click(function () {
+            updateCharts(0, 6, null, $('#fechaIni').val(), $('#fechaFin').val());
+        });
+        //$("#btnMostrarCharBarcanal").click(function () {
+        //    updateCharts(0, 3, null, null, null, null, $('#fechaIni_canal').val(), $('#fechaFin_canal').val());
+        //});
+        $("#btnMostrarCharBarcanal_excel").click(function () {
+            upload_canales_rango($('#fechaIni_canal').val(), $('#fechaFin_canal').val());
+        });
+        $("#btnMostrarCharBarCom").click(function () {
+            updateCharts(0, 10, null, null, null, null, null, null, $('#fechaIni_com').val(), $('#fechaFin_com').val());
+        });
+
+        $("#btnMostrarCharBarCom_CL").click(function () {
+            updateCharts(0, 12, null, null, null, null, null, null, null, null, $('#fechaIni_com_cl').val(), $('#fechaFin_com_cl').val());
+        });
+
+        $("#btnMostrarCharBarCom_CL_excel").click(function () {
+            upload_com_cl_rango($('#fechaIni_com_cl').val(), $('#fechaFin_com_cl').val());
+        });
+        $("#btnDataIncom_excel").click(function () {
+            //alert('ok');
+            if ($("#rdb_fn").is(':checked')) {
+                upload_data_incompleto('FN');
+            } else if ($("#rdb_gen").is(':checked')) {
+                upload_data_incompleto('GE');
+            } else if ($("#rdb_ubi").is(':checked')) {
+                upload_data_incompleto('UB');
+            };
+        });
+        //btnDataIncom_excel
+
+        $("#rdb_fn").change(function () {
+            updateCharts(0, 13, null, null, null, null, null, null, null, null, null, null, 'FN');
+            //alert('ok1');// upload_com_cl_rango($('#fechaIni_com_cl').val(), $('#fechaFin_com_cl').val());
+        });
+        $("#rdb_gen").change(function () {
+            //alert('ok2');// upload_com_cl_rango($('#fechaIni_com_cl').val(), $('#fechaFin_com_cl').val());
+            updateCharts(0, 13, null, null, null, null, null, null, null, null, null, null, 'GE');
+        });
+        $("#rdb_ubi").change(function () {
+            //alert('ok3');// upload_com_cl_rango($('#fechaIni_com_cl').val(), $('#fechaFin_com_cl').val());
+            updateCharts(0, 13, null, null, null, null, null, null, null, null, null, null, 'UB');
+        });
+
+        //$("#btnMostrarCharBarCom_CL_excel").click(function () {
+        //    upload_com_cl_rango($('#fechaIni_com_cl').val(), $('#fechaFin_com_cl').val());
+        //});
+
+
+        //btnMostrarCharBarCom
+        /*descargar archivo excel compras clientes x rango de fecha*/
+        function upload_data_incompleto(opcion_data_in) {
+            waitingDialog.show('Espere un momento por favor');
+            var msg_titulo = 'Mensaje ';
+            $.ajax({
+                type: 'POST',
+                data: { opcion_data_in: opcion_data_in },
+                dataType: 'json',
+                url: '@Url.Action("DataIncompleto_Excel")',
+                success: function (data) {
+                    var estado = data.estado;
+                    var desmsg = data.desmsg;
+                    if (estado == "1") {
+
+                        window.location = '@Url.Action("ExportarDataIncompleto_Excel")';
+                        toastr.success(desmsg, msg_titulo);
+                    }
+                    else {
+                        toastr.error(desmsg, msg_titulo);
+
+                    }
+                    waitingDialog.hide();
+                    //window.location = '<%= Url.Action("DownloadFile", "Home") %>?fileId=' + fileId;
+                },
+                error: function (xhr) {
+                    waitingDialog.hide();
+                    toastr.error(xhr, msg_titulo);
+                }
+            });
+        }
+
+        /*descargar archivo excel compras clientes x rango de fecha*/
+        function upload_com_cl_rango(fecini_com_cl, fecfin_com_cl) {
+            waitingDialog.show('Espere un momento por favor');
+            var msg_titulo = 'Mensaje ';
+            $.ajax({
+                type: 'POST',
+                data: { fecini_com_cl: fecini_com_cl, fecfin_com_cl: fecfin_com_cl },
+                dataType: 'json',
+                url: '@Url.Action("Compras_CL_Excel_Data")',
+                success: function (data) {
+                    var estado = data.estado;
+                    var desmsg = data.desmsg;
+                    if (estado == "1") {
+
+                        window.location = '@Url.Action("ExportaComClExcel")';
+                        toastr.success(desmsg, msg_titulo);
+                    }
+                    else {
+                        toastr.error(desmsg, msg_titulo);
+
+                    }
+                    waitingDialog.hide();
+                    //window.location = '<%= Url.Action("DownloadFile", "Home") %>?fileId=' + fileId;
+                },
+                error: function (xhr) {
+                    waitingDialog.hide();
+                    toastr.error(xhr, msg_titulo);
+                }
+            });
+        }
+        /*descargar archivo excel canales x rango de fecha*/
+        function upload_canales_rango(fecini_canal, fecfin_canal) {
+            waitingDialog.show('Espere un momento por favor');
+            var msg_titulo = 'Mensaje ';
+            $.ajax({
+                type: 'POST',
+                data: { fecini_canal: fecini_canal, fecfin_canal: fecfin_canal },
+                dataType: 'json',
+                url: '@Url.Action("CanalDetExcel_Data")',
+                success: function (data) {
+                    var estado = data.estado;
+                    var desmsg = data.desmsg;
+                    if (estado == "1") {
+
+                        window.location = '@Url.Action("ExportarCanalDetExcel")';
+                        toastr.success(desmsg, msg_titulo);
+                    }
+                    else {
+                        toastr.error(desmsg, msg_titulo);
+
+                    }
+                    waitingDialog.hide();
+                    //window.location = '<%= Url.Action("DownloadFile", "Home") %>?fileId=' + fileId;
+                },
+                error: function (xhr) {
+                    waitingDialog.hide();
+                    toastr.error(xhr, msg_titulo);
+                }
+            });
+        }
+
+        //getChartMensualRegMiem(document.getElementById('barChart'), JSON.parse('@Html.Raw(ViewBag.chartDS)'), JSON.parse('@Html.Raw(ViewBag.totalesGeneros)'));
+        //getChartCanales(document.getElementById('canalChart'), JSON.parse('@Html.Raw(ViewBag.chartDonut)'));
+        getChartMensualPS(document.getElementById('barChartPS'), JSON.parse('@Html.Raw(ViewBag.chartMesParesSoles)'), JSON.parse('@Html.Raw(ViewBag.promsPS)'), null, $("#anioPS").val());
+        //getChartSuperv(document.getElementById('barChartSuperv'), JSON.parse('@Html.Raw(ViewBag.BarChartTranReg)'), JSON.parse('@Html.Raw(ViewBag.DetallesTiendaSuperv)'));
+        // getChartCompras(document.getElementById('ComprasChart'), JSON.parse('@Html.Raw(ViewBag.ChartCompras)'));
+
+        getChartCompra_CL(document.getElementById('Chart_compras_CL'), JSON.parse('@Html.Raw(ViewBag.chartComCL)'));
+
+        getChartCompras(document.getElementById('barChart_com'), JSON.parse('@Html.Raw(ViewBag.BarChartCompras)'), JSON.parse('@Html.Raw(ViewBag.DetallesTipoCompra)'));
+
+        getChartIncompleto(document.getElementById('incompletoChart'), JSON.parse('@Html.Raw(ViewBag.chartIncompletos)'));
+
+        //document.getElementById('barChartPS').onclick = function (evt) {
+        //    var activePoints = myChartPS.getElementsAtEvent(evt);
+        //    //if (activePoints[0]) {
+        //        var chartData = activePoints[0]['_chart'].config.data;
+        //        var idx = activePoints[0]['_index'];
+
+        //        var label = chartData.labels[idx];
+        //        var value = chartData.datasets[0].data[idx];
+
+        //        //var url = "http://example.com/?label=" + label + "&value=" + value;
+        //        swal({
+        //            title:"Prueba evento click chart",
+        //            text: label + " = " + value
+        //        })
+        //    //};
+        //}
+        document.getElementById("barChartPS").onclick = function (e) {
+            //if (e.clientY <= 315) {
+            //    return;
+            //}
+            try {
+                var activeIndex = myChartPS.tooltip._lastActive[0]._index;
+                var clickCoordinates = Chart.helpers.getRelativePosition(e, myChartPS.chart);
+                if (clickCoordinates.y >= 36) {
+                    var activePoints = myChartPS.getElementsAtEvent(e);
+                    var datasetName = myChartPS.data.labels[activeIndex]; //myChartPS.data.datasets[activeIndex].label;
+
+                    var mes_sele = 0;
+
+                    switch (datasetName) {
+                        case "Enero":
+                            mes_sele = 1;
+                            break;
+                        case "Febrero":
+                            mes_sele = 2;
+                            break;
+                        case "Marzo":
+                            mes_sele = 3;
+                            break;
+                        case "Abril":
+                            mes_sele = 4;
+                            break;
+                        case "Mayo":
+                            mes_sele = 5;
+                            break;                               
+                        case "Junio":
+                            mes_sele = 6;
+                            break;
+                        case "Julio":
+                            mes_sele = 7;
+                            break;
+                        case "Agosto":
+                            mes_sele = 8;
+                            break;
+                        case "Septiembre":
+                            mes_sele = 9;
+                            break;
+                        case "Octubre":
+                            mes_sele = 10;
+                            break;
+                        case "Noviembre":
+                            mes_sele = 11;
+                            break;
+                        case "Dociembre":
+                            mes_sele = 12;
+                            break;                      
+                    }
+
+                    var informe = 5;
+                    var anio = $("#anioPS").val();
+                    var mes = activeIndex + 1
+                    updateCharts(anio, informe, mes_sele);
+                }
+            } catch (e) {
+
+            }
+        };
+        @*document.getElementById("barChartSuperv").onclick = function (e) {
+            try {
+                var activeIndex = myBarChartTR.tooltip._lastActive[0]._index;
+                var clickCoordinates = Chart.helpers.getRelativePosition(e, myBarChartTR.chart);
+                if (clickCoordinates.y >= 36) {
+                    $.ajax({
+                        type: "POST",
+                        url: '@Url.Action("updateChartData", "BataClub")',
+                        data: { informe: 8, sup: myBarChartTR.chart.config.data.labels[activeIndex] },
+                        success: function (data) {
+                            getChartSuperv(null, null, JSON.parse(data.tiendas)); //(JSON.parse('Html.Raw(ViewBag.DetallesTiendaSuperv)')).filter(w=>w.supervisor == myBarChartTR.chart.config.data.labels[activeIndex]));
+                        },
+                        error: function (XMLHttpRequest, textStatus, errorThrown) {
+                            waitingDialog.hide();
+                            var error = eval("(" + XMLHttpRequest.responseText + ")");
+                            swal(error.Message);
+                        }
+                    })
+                }
+            } catch (e) {
+
+            }
+        };*@
+
+        document.getElementById("barChart_com").onclick = function (e) {
+            try {
+                var activeIndex = myBarChartCO.tooltip._lastActive[0]._index;
+                var clickCoordinates = Chart.helpers.getRelativePosition(e, myBarChartCO.chart);
+                if (clickCoordinates.y >= 36) {
+                    $.ajax({
+                        type: "POST",
+                        url: '@Url.Action("updateChartData", "BataClub")',
+                        data: { informe: 9, sup: myBarChartCO.chart.config.data.labels[activeIndex] },
+                        success: function (data) {
+                            getChartCompras(null, null, JSON.parse(data.tipo)); //(JSON.parse('Html.Raw(ViewBag.DetallesTiendaSuperv)')).filter(w=>w.supervisor == myBarChartTR.chart.config.data.labels[activeIndex]));
+                        },
+                        error: function (XMLHttpRequest, textStatus, errorThrown) {
+                            waitingDialog.hide();
+                            var error = eval("(" + XMLHttpRequest.responseText + ")");
+                            swal(error.Message);
+                        }
+                    })
+                }
+            } catch (e) {
+
+            }
+        };
+
+        $(".anio").change(function () {
+            var informe = $(this).attr("data-informe");
+            var anio = "";
+            if (informe == 2) {
+                anio = $("#anioIm").val()
+            } else if (informe == 3) {
+                anio = $("#anioC").val()
+            } else if (informe == 4) {
+                anio = $("#anioPS").val()
+            }
+
+            updateCharts(anio, informe);
+        });
+
+        $('#promocionesDetalle').on('click', '.prom-det-tda', function (e) {
+            var anio = $(this).attr('data-anio-prom');
+            var mes = $(this).attr('data-mes-prom');//strmes
+            var strmes = $(this).attr('data-strmes-prom');//strmes
+            var prom = $(this).attr('data-prom');//data-tot-pares
+            var totPares = $(this).attr('data-tot-pares');//data-tot-pares
+            var totSoles = $(this).attr('data-tot-soles');//data-tot-pares
+            //swal(anio + " " + mes + " " + prom);
+
+            waitingDialog.show('Espere un momento por favor');
+            $.ajax({
+                type: "POST",
+                url: '@Url.Action("updateChartData", "BataClub")',
+                data: { anio: anio, informe: 11, mes: (mes == null || mes == '' ? 0 : mes), prom: prom },
+                success: function (data) {
+                    var totalPares = 0;
+                    var totalSoles = 0;
+                    var title1 = 'Promocion : ' + prom + '  &nbsp;&nbsp;&nbsp;&nbsp;  Año:' + anio + ' &nbsp;&nbsp;&nbsp;&nbsp;   ' + (mes == null || mes == '' || mes == 'null' ? '' : 'Mes: ' + strmes)
+                    var table = '' +
+                    '<table id="promDetTda" class="table table-hover table-condensed dt-lista-tdas table-striped table-responsive">' +
+                    '<thead><tr style="background-color:#3d566e; color:#ecf0f1"><th>Promocion</th><th>Pares</th><th>Soles</th></tr></thead><tbody data-bind="foreach:">';
+                    for (var i = 0; i < data.promsDetPromTda.length; i++) {
+                        table += '<tr><td>' + data.promsDetPromTda[i].tienda + '</td><td><span class="badge bg-pares">' + data.promsDetPromTda[i].pares + '</span></td><td><span class="badge bg-soles">' + data.promsDetPromTda[i].soles + '</span></td></tr>'
+                    }
+                    table += '</tbody><tfoot><tr><th>Promocion</th><th>Pares</th><th>Soles</th></tr></tfoot></table>'
+                    $("#listTdaProm").html(table);
+                    $("#promDetTda").DataTable({
+                        "language": {
+                            "url": "../Scripts/DataTables/Spanish.json"
+                        },
+                        "order": [2, "desc"]
+                    });
+                    var title2 = '<strong class="pull-left">#: ' + data.promsDetPromTda.length + '</strong>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong style="color: rgb(160, 100, 87)">P: ' + totPares.toLocaleString('es-PE') + '</strong>&nbsp;&nbsp;&nbsp;&nbsp;' +
+                    '<strong style="color: rgb(104, 123, 0)">S/ ' + totSoles.toLocaleString('es-PE') + '</strong>&nbsp;&nbsp;'
+                    $("#totalesPromocionesDetTda").html(title2);
+                    $("#tituloPromDetTda").html(title1);
+
+                    $("#modalPromDetTda").modal({ backdrop: 'static', keyboard: false });
+                    waitingDialog.hide();
+                },
+                error: function (XMLHttpRequest, textStatus, errorThrown) {
+                    waitingDialog.hide();
+                    var error = eval("(" + XMLHttpRequest.responseText + ")");
+                    swal(error.Message);
+                }
+            });
+        });
+
+        function updateCharts(anio, informe, mes, fecini, fecfin, prom, fecini_canal, fecfin_canal, fecini_com, fecfin_com, fecini_com_cl, fecfin_com_cl, opcion_data_in, fechaIni_PS, fechaFin_PS,canal_venta) {
+            waitingDialog.show('Espere un momento por favor');
+            $.ajax({
+                type: "POST",
+                url: '@Url.Action("updateChartData", "BataClub")',
+                data: { anio: anio, informe: informe, mes: (mes == null || mes == '' ? 0 : mes), fecini: fecini, fecfin: fecfin, prom: prom, fecini_canal: fecini_canal, fecfin_canal: fecfin_canal, fecini_com: fecini_com, fecfin_com: fecfin_com, fecini_com_cl: fecini_com_cl, fecfin_com_cl: fecfin_com_cl, opcion_data_in: opcion_data_in, fechaIni_PS: fechaIni_PS, fechaFin_PS: fechaFin_PS, canal_venta: canal_venta },
+                success: function (data) {
+                    if (informe == 2) {
+                        myChart.destroy();
+                        getChartMensualRegMiem(document.getElementById('barChart'), JSON.parse(data.result), data.totalesGenero);
+                    } else if (informe == 3) {
+                        myDoughnutChart.destroy();
+                        getChartCanales(document.getElementById('canalChart'), JSON.parse(data));
+                    } else if (informe == 4) {
+                        myChartPS.destroy();
+                        getChartMensualPS(document.getElementById('barChartPS'), JSON.parse(data.result), data.promsPS, null, anio);
+                    } else if (informe == 5) {
+                        getChartMensualPS(null, null, data.promsPS, mes, anio);
+                    } else if (informe == 6) {
+                        myBarChartTR.destroy();
+                        getChartSuperv(document.getElementById('barChartSuperv'), JSON.parse(data.result), data.tiendas);
+                    } else if (informe == 8 || informe == 10) {
+                        myBarChartCO.destroy();
+                        getChartCompras(document.getElementById('barChart_com'), JSON.parse(data.result), data.tipo);
+                    } else if (informe == 12) {
+                        myChartComCL.destroy();
+                        getChartCompra_CL(document.getElementById('Chart_compras_CL'), JSON.parse(data));
+                    } else if (informe == 13) {
+                        myIncompletoChart.destroy();
+                        getChartIncompleto(document.getElementById('incompletoChart'), JSON.parse(data));
+                    }
+
+                    waitingDialog.hide();
+                },
+                error: function (XMLHttpRequest, textStatus, errorThrown) {
+                    waitingDialog.hide();
+                    var error = eval("(" + XMLHttpRequest.responseText + ")");
+                    swal(error.Message);
+                }
+            });
+        }
+    });
+</script>

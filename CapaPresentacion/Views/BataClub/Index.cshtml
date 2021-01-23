@@ -1,0 +1,150 @@
+﻿@using CapaEntidad.BataClub
+
+@model IEnumerable<Ent_BataClub_CuponesCO>
+@{
+    ViewBag.Title = "Consulta de Cupones BataClub";
+    AjaxOptions options = new AjaxOptions
+    {
+        HttpMethod = "GET",
+        InsertionMode = InsertionMode.Replace,
+        UpdateTargetId = "listaGuia",
+        OnComplete = "waitingDialog.hide();",
+        OnBegin = "waitingDialog.show('Este proceso puede tardar unos minutos' , {headerText:'Espere un momento por favor.'});",
+        OnFailure = "waitingDialog.hide();"
+    };
+}
+<style>
+    .dataTables_processing {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 100%;
+        height: 40px;
+        margin-left: -50%;
+        margin-top: -25px;
+        padding-top: 20px;
+        text-align: center;
+        font-size: 1.2em;
+        background-color: white;
+        font-weight: bold;
+        color: cornflowerblue;
+        background: -webkit-gradient(linear, left top, right top, color-stop(0%, rgba(255,255,255,0)), color-stop(25%, rgba(255,255,255,0.9)), color-stop(75%, rgba(255,255,255,0.9)), color-stop(100%, rgba(255,255,255,0)));
+        background: -webkit-linear-gradient(left, rgba(255,255,255,0) 0%, rgba(255,255,255,0.9) 25%, rgba(255,255,255,0.9) 75%, rgba(255,255,255,0) 100%);
+        background: -moz-linear-gradient(left, rgba(255,255,255,0) 0%, rgba(255,255,255,0.9) 25%, rgba(255,255,255,0.9) 75%, rgba(255,255,255,0) 100%);
+        background: -ms-linear-gradient(left, rgba(255,255,255,0) 0%, rgba(255,255,255,0.9) 25%, rgba(255,255,255,0.9) 75%, rgba(255,255,255,0) 100%);
+        background: -o-linear-gradient(left, rgba(255,255,255,0) 0%, rgba(255,255,255,0.9) 25%, rgba(255,255,255,0.9) 75%, rgba(255,255,255,0) 100%);
+        background: linear-gradient(to right, rgba(255,255,255,0) 0%, rgba(255,255,255,0.9) 25%, rgba(255,255,255,0.9) 75%, rgba(255,255,255,0) 100%);
+    }
+    .boton-td{        
+        padding-top: 3px !important;
+        padding-bottom: 3px !important;
+    }
+    .modal-body {
+        max-height: calc(100vh - 212px);
+        overflow-y: auto;
+    }
+        p.content {
+        min-height: 0!important;
+        padding: 0!important;
+        margin-right: auto!important;
+        margin-left: auto!important;
+        padding-left: 0!important;
+        padding-right: 0!important;
+        color: dodgerblue;
+    }
+</style>
+<link href="@Url.Content("~/Content/bootstrap-select.min.css")" rel="stylesheet" type="text/css" />
+<p class="text-danger">Consulta de cupones BataClub por estado, promocion, dni, correo y codigo de cupón. </p>
+<div class="box box-body box-primary">
+    @using (Ajax.BeginForm("_Table", options))
+    {
+        <div class="row">
+            <div class="col-sm-3" style="padding-left: 25px;">
+                <div class="form-group">
+                    <label for="dwest">Estado cupón</label>
+                    @Html.DropDownList("dwest", new MultiSelectList(ViewBag.Estado, "est_id", "est_des", null), new { @class = "form-control selectpicker", @id = "dwest", @name = "dwest", @data_live_search = "true", @multiple = "multiple", @data_actions_box = "true", @data_selected_text_format = "count > 2" })
+                </div>
+            </div>
+            <div class="col-sm-3" style="padding-left: 25px;">
+                <div class="form-group">
+                    <label for="dwprom">Promoción</label>
+                    @Html.DropDownList("dwprom", new MultiSelectList(ViewBag.Promocion, "Codigo", "Descripcion", null), new { @class = "form-control selectpicker", @id = "dwprom", @data_live_search = "true", @multiple = "multiple", @data_actions_box = "true", @data_selected_text_format = "count > 2" })
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-sm-2" style="padding-left: 25px; margin-right: inherit;">
+                <label for="segape" style="color: #3d566e;">DNI</label>
+                <div class="form-group">
+                    <div class="input-group">
+                        <span class="input-group-addon" style="color: #3d566e;"><i class="glyphicon glyphicon-user"></i></span>
+                        <input id="dni" type="text" class="form-control" name="dni" placeholder="Ingresar DNI">
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-3" style="padding-left: 25px; margin-right: inherit;">
+                <label for="segape" style="color: #3d566e;">Cupón</label>
+                <div class="form-group">
+                    <div class="input-group">
+                        <span class="input-group-addon"><i class="glyphicon glyphicon-barcode"></i></span>
+                        <input id="cupon" type="text" class="form-control" name="cupon" placeholder="Ingresar cupon">
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-3" style="padding-left: 25px; margin-right: inherit;">
+                <label for="segape" style="color: #3d566e;">Correo</label>
+                <div class="form-group">
+                    <div class="input-group">
+                        <span class="input-group-addon"><i class="glyphicon glyphicon-envelope"></i></span>
+                        <input id="correo" type="text" class="form-control" name="correo" placeholder="Ingresar correo">
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-2" style="padding-left: 25px; width: 105px; margin-top: 23px; margin-bottom: 10px;">
+                <button id="btnSearch" type="submit" title="Consultar" class="btn btn-primary">
+                    <span class="glyphicon glyphicon-search"></span>&nbsp;&nbsp;Buscar
+                </button>
+            </div>
+            <div class="col-md-2" style="width: 105px;margin-top: 23px;float: right; margin-right: 25px;">
+                <a class="btn btn-success" href="@Url.Action("ExportToExcel")" title="Exportar a excel"><i class="glyphicon glyphicon-export"></i>&nbsp;&nbsp;Excel</a>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-6" id="resumen">
+                <div class="panel panel-primary p-10">
+                    <div class="panel-body" style="padding-top: 7px;padding-bottom: 4px;">
+                        <h5 class="text-bold text-info">Resumen</h5>
+                        <p>
+                            <span class="label label-primary" style="font-size:14px">
+                                <b>Consumidos:</b><small class="text-right">&nbsp;<label id="lblConsumidos" name="lblConsumidos"></label></small>
+                            </span>&nbsp;&nbsp;
+                            <span class="label label-success" style="font-size:14px">
+                                <b>Disponibles:</b><small class="text-right">&nbsp;<label id="lblDisponibles" name="lblDisponibles"></label></small>
+                            </span>&nbsp;&nbsp;
+                            <span class="label label-danger" style="font-size:14px"><b>Caducados:</b><small class="text-right">&nbsp;<label id="lblCaducados" name="lblCaducados" ></label></small></span>
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+
+    <div id="listaGuia" style="padding-bottom: 20px;">
+        @{Html.RenderPartial("_Table", Model);}
+    </div>   
+</div>
+<script src="~/Scripts/bootstrap-select.min.js"></script>
+<script src="@Url.Content("~/Scripts/bootstrap.min.js")"></script>
+<script>
+    $(document).ready(function () {
+        $('#lblConsumidos')[0].textContent = "0";
+        $('#lblDisponibles')[0].textContent = "0";
+        $('#lblCaducados')[0].textContent = "0";
+        $("#btnSearch").click(function () {
+            if ($("#dwest").val() == null && $("#dwprom").val() == null && $("#dni").val() == '' && $("#cupon").val() == '' && $("#correo").val() == '') {
+                toastr.error("Ingrese o seleccione algún filtro por favor.", "Mensaje");
+                return false;
+            }
+        })
+    });
+</script>

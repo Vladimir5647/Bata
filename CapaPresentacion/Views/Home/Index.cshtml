@@ -1,0 +1,63 @@
+﻿@Scripts.Render("~/bundles/bootstrap")
+
+<div class="row" id="divmsg" hidden="hidden">
+    @*<div class="box box-body box-primary">*@
+
+    @*<div class="content-wrapper">*@
+    <!-- Content Header (Page header) -->
+    <section class="content-header">
+        <h1>
+            <small></small>
+        </h1>
+    </section>
+    <!-- Main content -->
+    <section class="content">
+        <!-- row -->
+        <div class="row">
+            <div class="col-md-12">
+                <!-- The time line -->
+                <ul class="timeline">
+                    <!-- timeline time label -->
+                    <li class="time-label">
+                        <span class="bg-red">
+                            Mensaje del equipo de Soporte
+                        </span>
+                    </li>
+                    <!-- /.timeline-label -->
+                    <!-- timeline item -->
+                    <li>
+                        <i class="fa fa-user bg-blue"></i>
+                        <div class="timeline-item">
+                            <h3 class="timeline-header">Atenciones por el <a href="http://soporte.emcomer.pe:8080/" target="_blank">SISTEMA DE MESA DE AYUDA</a></h3>
+                            <div class="timeline-body">
+                                <b>URGENTES:</b>  (apertura, promociones, cupones, etc.) usar <b>LIVE CHAT</b><br />
+                                <b>MENOS urgentes:</b> (guías, artículos que no figuran, etc.) usar  <b>FORMULARIO WEB</b><br />
+                                <b>SIN ACCESO A PC:</b> (PC no enciende, no hay internet, etc.) usar  <b>WHATSAPP</b><br />
+                                <u>Para entrar al sistema </u> => Usuario: <b>50XXX</b> y Contraseña: <b>*50XXX+</b> (XXX es tu tienda)<br />
+                            </div>
+
+                        </div>
+                    </li>
+                </ul>
+            </div>
+            <!-- /.col -->
+        </div>
+    </section>
+    <!-- /.content -->
+    @*</div>*@
+    @*</div>*@
+
+</div>
+<script>
+    $(document).ready(function () {
+        var tienda="@ViewBag.tienda";
+        var pais="@ViewBag.pais";
+
+        if (tienda!='' && pais=='PE'){
+            $("#divmsg").show();
+        } else{
+            $("#divmsg").hide();
+        }
+
+    });
+</script>

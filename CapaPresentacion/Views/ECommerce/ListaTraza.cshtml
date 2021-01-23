@@ -1,0 +1,120 @@
+﻿<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/buttons/1.5.1/css/buttons.dataTables.min.css" />
+<table id="table" class="table table-hover dataTable  table-striped table-responsive">
+    @*<table id="lista" class="table table-hover dataTable  table-striped table-responsive">*@
+    <thead>
+        <tr style="background-color:#3d566e; color:#ecf0f1">
+            <th style="width:50px">Pedido</th>
+            <th style="width:130px">Cliente</th>
+            <th style="width:auto">Importe</th>
+            <th style="width:30px">Despacho</th>
+            <th style="width:120px">Tipo de entrega</th>
+            <th style="width:auto">Fec.Pedido</th>
+            <th style="width:auto">Fec.Ing.Facturación</th>
+            <th style="width:auto">Fec.reg.Venta</th>
+            <th style="width:auto">Fec.Courier</th>
+            @*    <th style="width:auto">Trazabilidad</th>*@
+            <th style="width:auto">Semáforo</th>
+            <th style="width:auto"></th>
+
+        </tr>
+    </thead>
+    <tbody></tbody>
+    <tfoot>
+        <tr>
+            <th>Pedido</th>
+            <th>Cliente</th>
+            <th>Importe</th>
+            <th>Despacho</th>
+            <th>Tipo de entrega</th>
+            <th>Fec.Pedido</th>
+            <th>Fec.Facturación</th>
+            <th>Fec.Venta</th>
+            <th>Fec.Courier</th>
+            @*    <th>Trazabilidad</th>*@
+            <th>Semáforo</th>
+            <th></th>
+        </tr>
+    </tfoot>
+</table>
+<script src='https://cdn.datatables.net/buttons/1.5.1/js/dataTables.buttons.min.js'></script>
+<script src='//cdnjs.cloudflare.com/ajax/libs/jszip/3.1.3/jszip.min.js'></script>
+<script src='//cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.32/pdfmake.min.js'></script>
+<script src='//cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.32/vfs_fonts.js'></script>
+<script src='//cdn.datatables.net/buttons/1.5.1/js/buttons.html5.min.js'></script>
+
+
+<script>
+    $(document).ready(function () {
+        $('#table').dataTable({
+            "language": {
+                "url": "../Scripts/DataTables/Spanish.json"
+            },
+            "bServerSide": true,
+            "bAutoWidth": false,
+            "sAjaxSource": '@Url.Action("getListaTraza", "ECommerce")',
+            "bdestroy": true,
+            "start": 0,
+            "order": [0, "asc"],
+            "bDeferRender": true,
+            "aoColumns": [
+                   { "sName": "ID_PEDIDO", "mData": "ID_PEDIDO" },
+                   { "sName": "CLIENTE", "mData": "CLIENTE" },
+                   { "sName": "IMPORTE_PEDIDO", "mData": "IMPORTE_PEDIDO" },
+                   { "sName": "DESPACHO", "mData": "DESPACHO" },
+                   { "sName": "TIPO_ENTREGA", "mData": "TIPO_ENTREGA" },
+                   { "sName": "FECHA_PEDIDO", "mData": "FECHA_PEDIDO" },
+                   { "sName": "FECHA_ING_FACTURACION", "mData": "FECHA_ING_FACTURACION" },
+                   { "sName": "FECHA_REG_VENTA", "mData": "FECHA_REG_VENTA" },
+                   { "sName": "FECHA_REG_COURIER", "mData": "FECHA_REG_COURIER" },
+                   //{
+                   //    "render": function (data, type, full) {
+                   //        return "<span class='label label-" + full.COLOR + "'>" + full.TRAZABILIDAD + "</span>"
+                   //    }
+                   //},
+                   {
+                       "render": function (data, type, full) {
+                           return "<span class='label label-" + full.COLOR + "'>" + full.ESTADO + "</span>"
+                       }
+                   },
+            {
+                "render": function (data, type, full) {
+                    if (full.COLOR == "danger" || full.COLOR == "success") {
+                        //return "<div class='checkbox' style='height: 13px;'><label><input style='margin-top: 0px;' onClick='actualizarValorArt(\"" + full.ARTICULO + "\");' type='checkbox'  checked> TRUE</label></div>"
+                        return ""
+                    } else if (full.VALOR == false) {
+                        //return "<div class='checkbox' style='height: 13px;'><label><input style='margin-top: 0px;'  onClick='actualizarValorArt(\"" + full.ID_PEDIDO + "\");' type='checkbox'  > FALSE</label></div>"
+                        return "<div class='checkbox' style='height: 13px;'><label><input style='margin-top: 0px;' onClick='AgregarPedido(" + full.ID_PEDIDO + ");' type='checkbox' > </label></div>"
+                    } else if (full.VALOR == true) {
+                        return "<div class='checkbox' style='height: 13px;'><label><input style='margin-top: 0px;' onClick='AgregarPedido(" + full.ID_PEDIDO + ");' type='checkbox' checked > </label></div>"
+                    }
+                }, "className": "content-center-text"
+            },
+
+
+            ],
+
+        });
+
+    });
+
+
+    function AgregarPedido(ID_PEDIDO) {
+        //alert(ID_PEDIDO);
+
+        waitingDialog.show('Agregando el pedido a la lista...');
+        $.ajax({
+            type: "POST",                                              // tipo de request que estamos generando
+            url: '@Url.Action("AgregarPedido", "Ecommerce")',                    // URL al que vamos a hacer el pedido
+            data: { IdPedido_: ID_PEDIDO },    // data es un arreglo JSON que contiene los parámetros que
+            // van a ser recibidos por la función del servidor           // tipo de contenido
+            //dataType: "json",                                              // si es asincrónico o no
+            success: function (data) {
+                //validadoBataClub = true;
+                waitingDialog.hide();
+                //if (data.estado == 1) {
+                //}
+            }
+        })
+    }
+
+</script>

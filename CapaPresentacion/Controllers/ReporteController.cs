@@ -338,7 +338,7 @@ namespace CapaPresentacion.Controllers
                 entComboD.cbo_descripcion = "----Todos----";
                 listD.Add(entComboD);
                 ViewBag.Categoria = listD;
-
+                //vladimir
                 List<Ent_Combo_DisCadTda> combo_discadtda = discattda.list_dis_cad_tda(Session["PAIS"].ToString());
                 //Session["Tienda"] = "50143";
                 if (Session["Tienda"] != null)
@@ -350,7 +350,7 @@ namespace CapaPresentacion.Controllers
                 ViewBag.DisCadTda = combo_discadtda;
 
                 Session[_session_dis_cad_tda] = combo_discadtda;
-
+                //vladimir end
 
 
                 List<Ent_Combo_DisCadTda> list_cad = new List<Ent_Combo_DisCadTda>();
@@ -460,10 +460,12 @@ namespace CapaPresentacion.Controllers
 
                 List<Ent_Combo_DisCadTda> combo_discadtda = discattda.list_dis_cad_tda(Session["PAIS"].ToString());
                 //Session["Tienda"] = "50143";
+                //vladimir
                 if (Session["Tienda"] != null)
                 {
                     combo_discadtda = combo_discadtda.Where(t => t.cod_entid == Session["Tienda"].ToString()).ToList();
                 }
+                //vladimir end
 
                 //ViewBag.Distrito = combo_distrito(combo_discadtda);
                 //ViewBag.DisCadTda = combo_discadtda;
@@ -641,11 +643,12 @@ namespace CapaPresentacion.Controllers
 
                 List<Ent_Combo_DisCadTda> combo_discadtda = discattda.list_dis_cad_tda(Session["PAIS"].ToString());
                 //Session["Tienda"] = "50143";
+                //vladimir
                 if (Session["Tienda"] != null)
                 {
                     combo_discadtda = combo_discadtda.Where(t => t.cod_entid == Session["Tienda"].ToString()).ToList();
                 }
-
+                //vladimir end
                 ViewBag.Distrito = combo_distrito(combo_discadtda);
                 ViewBag.DisCadTda = combo_discadtda;
 
@@ -771,7 +774,7 @@ namespace CapaPresentacion.Controllers
                 }
 
                 ViewBag.sem = ent_sem;
-
+                //vladimir
                 if (Session["Tienda"] != null)
                 {
                     ViewBag.Tienda = datCbo.get_ListaTiendaXstoreActivo(Session["PAIS"].ToString(),Session["Tienda"].ToString());
@@ -782,7 +785,7 @@ namespace CapaPresentacion.Controllers
                     ViewBag.Tienda = datCbo.get_ListaTiendaXstoreActivo(Session["PAIS"].ToString(),"");
 
                 }
-
+                //vladimir end
                 return View();
             }
         }
